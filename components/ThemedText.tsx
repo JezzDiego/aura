@@ -1,31 +1,31 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps, StyleSheet, Platform } from "react-native";
 
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
 };
 
 export function ThemedText({
   style,
   lightColor,
   darkColor,
-  type = 'default',
+  type = "default",
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
 
   return (
     <Text
       style={[
         { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        type === "default" ? styles.default : undefined,
+        type === "title" ? styles.title : undefined,
+        type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,
+        type === "subtitle" ? styles.subtitle : undefined,
+        type === "link" ? styles.link : undefined,
         style,
       ]}
       {...rest}
@@ -33,28 +33,46 @@ export function ThemedText({
   );
 }
 
+const fontFamily = Platform.select({
+  ios: {
+    fontFamily: "Nunito",
+  },
+  android: {
+    fontFamily: "DMSans",
+  },
+  web: {
+    fontFamily: "DMSans",
+  },
+});
+
 const styles = StyleSheet.create({
   default: {
+    ...fontFamily,
     fontSize: 16,
     lineHeight: 24,
   },
   defaultSemiBold: {
+    ...fontFamily,
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   title: {
+    paddingTop: 5,
+    ...fontFamily,
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     lineHeight: 32,
   },
   subtitle: {
+    ...fontFamily,
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   link: {
+    ...fontFamily,
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: "#0a7ea4",
   },
 });
