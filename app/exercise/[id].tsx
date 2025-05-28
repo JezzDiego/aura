@@ -3,23 +3,11 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { PropsWithChildren, useEffect } from "react";
+import { useEffect } from "react";
 import { ScrollView, View } from "react-native";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionContentText,
-  AccordionHeader,
-  AccordionIcon,
-  AccordionItem,
-  AccordionTitleText,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  ChevronDownCircleIcon,
-  ChevronUpCircleIcon,
-} from "lucide-react-native";
+import { Exercise } from "@/components/shared/Exercise";
+import { BicepsFlexedIcon, FlameIcon } from "lucide-react-native";
+import { Badge, BadgeIcon, BadgeText } from "@/components/ui/badge";
 
 const ExerciseScreen = () => {
   const navigation = useNavigation();
@@ -50,51 +38,82 @@ const ExerciseScreen = () => {
         <View>
           <ThemedText
             type="title"
-            className="text-center font-bold text-2xl mt-8 mb-4"
+            className="text-center font-bold text-2xl mt-4 mb-12"
           >
             Day #{id}
           </ThemedText>
-          <ThemedText type="subtitle" className="font-normal text-base">
-            Warmup
+
+          <ThemedText>
+            <Badge
+              size="lg"
+              variant="solid"
+              action="muted"
+              className="rounded-full bg-white p-2"
+            >
+              <BadgeText className="font-bold ml-1 text-[#A05E03] text-md">
+                Warmup
+              </BadgeText>
+              <BadgeIcon as={FlameIcon} color="#A05E03" className="ml-1" />
+            </Badge>
           </ThemedText>
-          <ExerciseAccordion title="Exercise Details">
+
+          <Exercise.Accordion title="Exercise Details" videoId="2g811Eo7K8U">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem
+            ipsum dolor sit amet consectetur adipisicing elit. Doloribus
+            necessitatibus dolorum sunt tempora quod, rerum nemo repudiandae
+            deserunt optio voluptatem. Mollitia rerum dolores, voluptates in
+            facilis dolor cum blanditiis dolore.
+          </Exercise.Accordion>
         </View>
 
         <View>
-          <ThemedText type="subtitle" className="font-normal text-base">
-            Workout
+          <ThemedText>
+            <Badge
+              size="lg"
+              variant="solid"
+              action="muted"
+              className="rounded-full bg-white p-2"
+            >
+              <BadgeText className="font-bold ml-1 text-[#5555CB] text-md">
+                Workout
+              </BadgeText>
+              <BadgeIcon
+                as={BicepsFlexedIcon}
+                color="#5555CB"
+                className="ml-1"
+              />
+            </Badge>
           </ThemedText>
-          <ExerciseAccordion title="Exercise Details">
+
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
-          <ExerciseAccordion title="Exercise Details">
+          </Exercise.Accordion>
+          <Exercise.Accordion title="Exercise Details">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
             eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </ExerciseAccordion>
+          </Exercise.Accordion>
         </View>
       </ThemedView>
     </ScrollView>
@@ -102,36 +121,3 @@ const ExerciseScreen = () => {
 };
 
 export default ExerciseScreen;
-
-const ExerciseAccordion = ({
-  title,
-  children,
-}: PropsWithChildren & { title: string }) => {
-  return (
-    <Accordion className="mt-4" variant="unfilled">
-      <View className="border-[0.5px] border-gray-200 rounded-xl">
-        <AccordionItem value="item-1">
-          <AccordionHeader>
-            <AccordionTrigger>
-              {({ isExpanded }: { isExpanded: boolean }) => {
-                return (
-                  <>
-                    <AccordionTitleText>{title}</AccordionTitleText>
-                    {isExpanded ? (
-                      <AccordionIcon as={ChevronUpCircleIcon} />
-                    ) : (
-                      <AccordionIcon as={ChevronDownCircleIcon} />
-                    )}
-                  </>
-                );
-              }}
-            </AccordionTrigger>
-          </AccordionHeader>
-          <AccordionContent>
-            <AccordionContentText>{children}</AccordionContentText>
-          </AccordionContent>
-        </AccordionItem>
-      </View>
-    </Accordion>
-  );
-};

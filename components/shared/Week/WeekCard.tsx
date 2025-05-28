@@ -1,17 +1,17 @@
-import { ThemedText } from "./ThemedText";
-import { Image } from "./ui/image";
-import { ThemedView } from "./ThemedView";
+import { ThemedText } from "../../ThemedText";
+import { Image } from "../../ui/image";
+import { ThemedView } from "../../ThemedView";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { Badge, BadgeIcon, BadgeText } from "./ui/badge";
+import { Badge, BadgeIcon, BadgeText } from "../../ui/badge";
 import { View } from "react-native";
-import { BicepsFlexedIcon, FlameIcon, MapPinIcon } from "lucide-react-native";
-import { Icon } from "./ui/icon";
+import { BicepsFlexedIcon, BoneIcon, MapPinIcon } from "lucide-react-native";
+import { Icon } from "../../ui/icon";
 import { Link } from "expo-router";
 
 export interface WeekCardProps {
   image: string;
   title: string;
-  type: "Workout" | "Warmup";
+  type: "upper" | "lower";
   subTitle: string;
 }
 
@@ -33,15 +33,15 @@ const WeekCard = ({ image, title, type, subTitle }: WeekCardProps) => {
       icon: React.ElementType;
     };
   } = {
-    Workout: {
+    upper: {
       card: workoutColor,
       text: "#5555CB",
       icon: BicepsFlexedIcon,
     },
-    Warmup: {
+    lower: {
       card: warmupColor,
       text: "#A05E03",
-      icon: FlameIcon,
+      icon: BoneIcon,
     },
   };
 
