@@ -1,5 +1,5 @@
-import { Button, ButtonText } from "./ui/button";
-import { Heading } from "./ui/heading";
+import { Button, ButtonText } from "../../ui/button";
+import { Heading } from "../../ui/heading";
 import {
   Modal,
   ModalBackdrop,
@@ -8,12 +8,12 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-} from "./ui/modal";
-import { Icon, CloseIcon } from "./ui/icon";
+} from "../../ui/modal";
+import { Icon, CloseIcon } from "../../ui/icon";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { WeekCardProps } from "./WeekCard";
-import { ThemedText } from "./ThemedText";
+import { ThemedText } from "../../ThemedText";
 
 type WeekDetailsProps = React.PropsWithChildren<{
   CardProps: WeekCardProps;
