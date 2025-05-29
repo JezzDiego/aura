@@ -93,7 +93,6 @@ export default function HomeScreen() {
         </View>
       }
     >
-      {/* <StatusBar style="auto" /> */}
       <ThemedView style={styles.titleContainer}>
         <View className="flex flex-row items-center gap-2">
           <ThemedText type="title">Welcome to Aura!</ThemedText>
