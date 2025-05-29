@@ -19,12 +19,8 @@ import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { HouseIcon, WeightIcon } from "lucide-react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
-import { ApiService, WeekData } from "@/services/api";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { ApiService, WeekDataProps } from "@/services/api";
 
 type TabProps = "gym" | "house";
 
@@ -40,7 +36,7 @@ const fadeAnimation = (index: number, type: "in" | "out") =>
 
 export default function HomeScreen() {
   const [tab, setTab] = useState<TabProps>("gym");
-  const [data, setData] = useState<WeekData>();
+  const [data, setData] = useState<WeekDataProps>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,20 +134,19 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </ThemedView>
       {data ? (
-        <View className="flex-1 gap-12 mt-4">
+        <Animated.View
+          key={tab}
+          className="flex-1 gap-12 mt-4"
+          entering={fadeAnimation(0.3, "in")}
+          exiting={fadeAnimation(0, "out")}
+        >
           {data[tab].map((item, index) => (
-            <Animated.View
-              key={index}
-              className="flex-1 gap-10"
-              entering={fadeAnimation(index, "in")}
-              exiting={fadeAnimation(index, "out")}
-              layout={LinearTransition.springify()}
-            >
+            <View key={index} className="flex-1 gap-10">
               <Week.List title={item.title} cards={item.cards} />
               <Divider />
-            </Animated.View>
+            </View>
           ))}
-        </View>
+        </Animated.View>
       ) : (
         <View className="flex-1 items-center justify-center mt-4">
           <ActivityIndicator size="large" color="#5555CB" />

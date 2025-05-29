@@ -166,4 +166,4 @@ const weekData = {
   ],
 };
 
-export type WeekData = typeof weekData;
+export type WeekDataProps = typeof weekData;
