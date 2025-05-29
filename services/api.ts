@@ -1,4 +1,25 @@
-const api = {
+export class ApiService {
+  private static instance: ApiService;
+
+  private constructor() {}
+
+  public static getInstance(): ApiService {
+    if (!ApiService.instance) {
+      ApiService.instance = new ApiService();
+    }
+    return ApiService.instance;
+  }
+
+  public getWeekData(): Promise<typeof weekData> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(weekData);
+      }, 1000);
+    });
+  }
+}
+
+const weekData = {
   gym: [
     {
       title: "Week 1 - gym",
@@ -145,5 +166,4 @@ const api = {
   ],
 };
 
-export default api;
-export type ApiType = typeof api;
+export type WeekData = typeof weekData;

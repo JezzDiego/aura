@@ -1,20 +1,20 @@
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   Platform,
   StyleSheet,
   TouchableOpacity,
-  useColorScheme,
   View,
 } from "react-native";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Week } from "@/components/shared/Week";
-import { StatusBar } from "expo-status-bar";
 import { Divider } from "@/components/ui/divider";
 import { Icon } from "@/components/ui/icon";
 import { HouseIcon, WeightIcon } from "lucide-react-native";
@@ -24,12 +24,42 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import api from "@/services/api";
+import { ApiService, WeekData } from "@/services/api";
 
 type TabProps = "gym" | "house";
 
+const animationMultiplier = 300;
+const maxAnimationDuration = 3000;
+const fadeAnimation = (index: number, type: "in" | "out") =>
+  (type === "in" ? FadeIn : FadeOut).duration(
+    animationMultiplier +
+      (index * animationMultiplier <= maxAnimationDuration
+        ? index * animationMultiplier
+        : maxAnimationDuration)
+  );
+
 export default function HomeScreen() {
   const [tab, setTab] = useState<TabProps>("gym");
+  const [data, setData] = useState<WeekData>();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const weekData = await ApiService.getInstance().getWeekData();
+        setData(weekData);
+      } catch (error) {
+        setData({
+          gym: [],
+          house: [],
+        });
+        Alert.alert(
+          "Error fetching week data:",
+          error instanceof Error ? error.message : "Unknown error"
+        );
+      }
+    };
+    fetchData();
+  }, [data]);
 
   const gymBorderColor = useThemeColor(
     { light: "#5555CB", dark: "#5555CB" },
@@ -107,46 +137,24 @@ export default function HomeScreen() {
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
-
-      {tab === "gym" && (
+      {data ? (
         <View className="flex-1 gap-12 mt-4">
-          {api.gym.map((item, index) => (
+          {data[tab].map((item, index) => (
             <Animated.View
               key={index}
               className="flex-1 gap-10"
-              entering={FadeIn.duration(
-                300 + (index * 300 <= 3000 ? index * 300 : 3000)
-              )}
-              exiting={FadeOut.duration(
-                300 + (index * 300 <= 3000 ? index * 300 : 3000)
-              )}
+              entering={fadeAnimation(index, "in")}
+              exiting={fadeAnimation(index, "out")}
               layout={LinearTransition.springify()}
             >
-              <Week.List key={index} title={item.title} cards={item.cards} />
+              <Week.List title={item.title} cards={item.cards} />
               <Divider />
             </Animated.View>
           ))}
         </View>
-      )}
-
-      {tab === "house" && (
-        <View className="flex-1 gap-12 mt-4">
-          {api.house.map((item, index) => (
-            <Animated.View
-              key={index}
-              className="flex-1 gap-10"
-              entering={FadeIn.duration(
-                300 + (index * 300 <= 3000 ? index * 300 : 3000)
-              )}
-              exiting={FadeOut.duration(
-                300 + (index * 300 <= 3000 ? index * 300 : 3000)
-              )}
-              layout={LinearTransition.springify()}
-            >
-              <Week.List key={index} title={item.title} cards={item.cards} />
-              <Divider />
-            </Animated.View>
-          ))}
+      ) : (
+        <View className="flex-1 items-center justify-center mt-4">
+          <ActivityIndicator size="large" color="#5555CB" />
         </View>
       )}
     </ParallaxScrollView>
