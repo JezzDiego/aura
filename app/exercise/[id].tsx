@@ -3,18 +3,37 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import { Exercise } from "@/components/shared/Exercise";
 import { BicepsFlexedIcon, FlameIcon } from "lucide-react-native";
 import { Badge, BadgeIcon, BadgeText } from "@/components/ui/badge";
+import { ApiService, ExerciseDataProps } from "@/services/api";
 
 const ExerciseScreen = () => {
   const navigation = useNavigation();
   const theme = useColorScheme();
   const colors = Colors[theme!];
+  const [data, setData] = useState<ExerciseDataProps[0]>();
 
   const { id } = useLocalSearchParams();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const exerciseData = await ApiService.getInstance().getExerciseData(
+          id as string
+        );
+        setData(exerciseData[0]);
+      } catch (error) {
+        Alert.alert(
+          "Error fetching week data:",
+          error instanceof Error ? error.message : "Unknown error"
+        );
+      }
+    };
+    fetchData();
+  }, [data, id]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -32,15 +51,23 @@ const ExerciseScreen = () => {
     });
   }, [colors, navigation]);
 
+  if (!data) {
+    return (
+      <ThemedView className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#5555CB" />
+      </ThemedView>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <ThemedView className="flex-1 px-8 gap-20">
+      <ThemedView className="flex-1 px-8 pb-20 gap-20">
         <View>
           <ThemedText
             type="title"
             className="text-center font-bold text-2xl mt-4 mb-12"
           >
-            Day #{id}
+            {data.title}
           </ThemedText>
 
           <ThemedText>
@@ -56,15 +83,16 @@ const ExerciseScreen = () => {
               <BadgeIcon as={FlameIcon} color="#A05E03" className="ml-1" />
             </Badge>
           </ThemedText>
-
-          <Exercise.Accordion title="Exercise Details" videoId="2g811Eo7K8U">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem
-            ipsum dolor sit amet consectetur adipisicing elit. Doloribus
-            necessitatibus dolorum sunt tempora quod, rerum nemo repudiandae
-            deserunt optio voluptatem. Mollitia rerum dolores, voluptates in
-            facilis dolor cum blanditiis dolore.
-          </Exercise.Accordion>
+          {data.warmup.map((warmup, index) => (
+            <Exercise.Accordion
+              key={index}
+              title={warmup.title}
+              videoId={warmup.videoId}
+              reverseOrder={index % 2 === 0}
+            >
+              {warmup.description}
+            </Exercise.Accordion>
+          ))}
         </View>
 
         <View>
@@ -86,34 +114,16 @@ const ExerciseScreen = () => {
             </Badge>
           </ThemedText>
 
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
-          <Exercise.Accordion title="Exercise Details">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Exercise.Accordion>
+          {data.workout.map((workout, index) => (
+            <Exercise.Accordion
+              key={index}
+              title={workout.title}
+              videoId={workout.videoId}
+              reverseOrder={index % 2 === 0}
+            >
+              {workout.description}
+            </Exercise.Accordion>
+          ))}
         </View>
       </ThemedView>
     </ScrollView>
