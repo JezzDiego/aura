@@ -9,13 +9,14 @@ import { Icon } from "../../ui/icon";
 import { Link } from "expo-router";
 
 export interface WeekCardProps {
+  id: string;
   image: string;
   title: string;
   type: "upper" | "lower";
   subTitle: string;
 }
 
-const WeekCard = ({ image, title, type, subTitle }: WeekCardProps) => {
+const WeekCard = ({ id, image, title, type, subTitle }: WeekCardProps) => {
   const workoutColor = useThemeColor(
     { light: "#D5D5FF", dark: "#5555CB" },
     "background"
@@ -48,17 +49,17 @@ const WeekCard = ({ image, title, type, subTitle }: WeekCardProps) => {
   const excerciseType = defaultColors[type];
 
   return (
-    <Link href="/exercise/1">
+    <Link href={`/exercise/${id}`}>
       <ThemedView
         style={{
           backgroundColor: excerciseType.card,
         }}
-        className="rounded-xl py-4 px-8"
+        className="rounded-xl py-6 px-8"
       >
         <View className="flex flex-row items-start justify-between gap-8">
           <View>
             <ThemedText className="text-xl font-bold">{title}</ThemedText>
-            <ThemedText className="text-gray-500">{subTitle}</ThemedText>
+            <ThemedText className="text-gray-500 mt-4 max-w-64">{subTitle}</ThemedText>
           </View>
 
           <View className="flex flex-col items-end justify-center">

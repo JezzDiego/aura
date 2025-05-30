@@ -29,9 +29,9 @@ const maxAnimationDuration = 3000;
 const fadeAnimation = (index: number, type: "in" | "out") =>
   (type === "in" ? FadeIn : FadeOut).duration(
     animationMultiplier +
-      (index * animationMultiplier <= maxAnimationDuration
-        ? index * animationMultiplier
-        : maxAnimationDuration)
+    (index * animationMultiplier <= maxAnimationDuration
+      ? index * animationMultiplier
+      : maxAnimationDuration)
   );
 
 export default function HomeScreen() {
@@ -141,7 +141,7 @@ export default function HomeScreen() {
         >
           {data[tab].map((item, index) => (
             <View key={index} className="flex-1 gap-10">
-              <Week.List title={item.title} cards={item.cards} />
+              <Week.List id={item.id} title={item.title} cards={item.cards} />
               <Divider />
             </View>
           ))}
