@@ -7,17 +7,25 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.aura.presentation.ui.feature_home.HomeScreen
+import androidx.navigation.compose.rememberNavController
+import com.example.aura.presentation.navigation.AuraNavHost
 import com.example.aura.presentation.ui.theme.AuraTheme
 
 class MainActivity : ComponentActivity() {
+    private val container by lazy { (application as AuraApp).container }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             AuraTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    HomeScreen()
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+//                        .windowInsetsPadding(WindowInsets.systemBars),
+                ) {
+                    val navController = rememberNavController()
+                    AuraNavHost(navController)
                 }
             }
         }
