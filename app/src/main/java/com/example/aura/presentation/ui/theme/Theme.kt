@@ -1,41 +1,65 @@
 package com.example.aura.presentation.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = RoxoPrimaryDark,
+    onPrimary = RoxoOnPrimaryDark,
+    primaryContainer = RoxoPrimaryContainerDark,
+    onPrimaryContainer = RoxoOnPrimaryContainerDark,
+
+    secondary = RoxoSecondaryDark,
+    onSecondary = RoxoOnSecondaryDark,
+    secondaryContainer = RoxoSecondaryContainerDark,
+    onSecondaryContainer = RoxoOnSecondaryContainerDark,
+
+    tertiary = RoxoTertiaryDark,
+    onTertiary = RoxoOnTertiaryDark,
+    tertiaryContainer = RoxoTertiaryContainerDark,
+    onTertiaryContainer = RoxoOnTertiaryContainerDark,
+
+    background = RoxoBackgroundDark,
+    onBackground = RoxoOnBackgroundDark,
+    surface = RoxoSurfaceDark,
+    onSurface = RoxoOnSurfaceDark,
+    outline = RoxoOutlineDark,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = RoxoPrimary,
+    onPrimary = RoxoOnPrimary,
+    primaryContainer = RoxoPrimaryContainer,
+    onPrimaryContainer = RoxoOnPrimaryContainer,
+
+    secondary = RoxoSecondary,
+    onSecondary = RoxoOnSecondary,
+    secondaryContainer = RoxoSecondaryContainer,
+    onSecondaryContainer = RoxoOnSecondaryContainer,
+
+    tertiary = RoxoTertiary,
+    onTertiary = RoxoOnTertiary,
+    tertiaryContainer = RoxoTertiaryContainer,
+    onTertiaryContainer = RoxoOnTertiaryContainer,
+
+    background = RoxoBackground,
+    onBackground = RoxoOnBackground,
+    surface = RoxoSurface,
+    onSurface = RoxoOnSurface,
+    outline = RoxoOutline,
 )
 
 @Composable
 fun AuraTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    // Force brand colors (no dynamic wallpaper extraction)
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
@@ -43,4 +67,3 @@ fun AuraTheme(
         content = content
     )
 }
-

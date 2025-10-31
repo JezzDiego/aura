@@ -87,6 +87,9 @@ dependencies {
     implementation("androidx.compose.material3:material3-window-size-class:1.4.0")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.5.0-alpha07")
 
+    // Icons - Lucide
+    implementation("com.composables:icons-lucide:1.0.0")
+
     // OkHttp Logging Interceptor
 //    implementation("com.squareup.okhttp3:logging-interceptor:5.3.0")
 }

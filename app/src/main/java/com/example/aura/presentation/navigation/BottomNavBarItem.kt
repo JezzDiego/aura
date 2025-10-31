@@ -1,9 +1,9 @@
 package com.example.aura.presentation.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.aura.presentation.icons.House
 import com.example.aura.presentation.navigation.destinations.homeRoute
 import com.example.aura.presentation.navigation.destinations.profileRoute
 
@@ -14,7 +14,7 @@ sealed class BottomNavBarItem(
 ) {
     object HomeNavBarItem : BottomNavBarItem(
         label = "Home",
-        icon = Icons.Filled.Home,
+        icon = House,
         route = homeRoute,
     )
 

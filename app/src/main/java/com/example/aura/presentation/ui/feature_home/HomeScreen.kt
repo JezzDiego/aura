@@ -1,8 +1,11 @@
 package com.example.aura.presentation.ui.feature_home
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -19,10 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.*
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.aura.presentation.ui.theme.RoxoPrimary
+import com.example.aura.presentation.ui.theme.RoxoPrimaryContainer
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen() {
@@ -40,7 +51,7 @@ fun HomeScreen() {
                 textFieldState = textFieldState,
                 onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
                 placeholder = {
-                    Text(modifier = Modifier.clearAndSetSemantics() {}, text = "Search...")
+                    Text(modifier = Modifier.clearAndSetSemantics{}, text = "Search...")
                 },
                 leadingIcon = {
                     if (searchBarState.currentValue == SearchBarValue.Expanded) {
@@ -70,26 +81,44 @@ fun HomeScreen() {
         }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-    ) { paddingValues ->
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .background(
+                color = MaterialTheme.colorScheme.background
+            ),
+    ) {
         Surface(
             modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxWidth(),
+                .fillMaxSize(),
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
 
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Absolute.Center,
+                SearchBar(state = searchBarState, inputField = inputField)
+                ExpandedFullScreenSearchBar(state = searchBarState, inputField = inputField){}
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Start,
                 ) {
-                    SearchBar(state = searchBarState, inputField = inputField)
-                    ExpandedFullScreenSearchBar(state = searchBarState, inputField = inputField){}
+                    Text(
+                        text = "Olá, Jessé!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 36.sp,
+                        lineHeight = 38.sp,
+                    )
                 }
-                LoadingIndicator()
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen()
 }
