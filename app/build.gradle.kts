@@ -81,6 +81,12 @@ dependencies {
     implementation("androidx.datastore:datastore:1.1.7")
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
+
+    // Material3
+    implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.compose.material3:material3-window-size-class:1.4.0")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.5.0-alpha07")
+
     // OkHttp Logging Interceptor
 //    implementation("com.squareup.okhttp3:logging-interceptor:5.3.0")
 }
