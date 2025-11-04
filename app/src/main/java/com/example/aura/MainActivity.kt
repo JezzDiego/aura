@@ -25,7 +25,6 @@ class MainActivity : ComponentActivity() {
                     contentColor = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier
                         .fillMaxSize()
-//                        .windowInsetsPadding(WindowInsets.systemBars),
                 ) {
                     val navController = rememberNavController()
                     AuraNavHost(navController)

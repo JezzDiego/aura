@@ -10,13 +10,17 @@ import com.example.aura.R
 
 // Register font families from res/font
 val DMSans = FontFamily(
-    Font(R.font.dmsans_variablefont_opsz_wght, FontWeight.Normal),
-    Font(R.font.dmsans_variablefont_opsz_wght, FontWeight.Medium),
-    Font(R.font.dmsans_variablefont_opsz_wght, FontWeight.SemiBold),
-    Font(R.font.dmsans_variablefont_opsz_wght, FontWeight.Bold),
+    Font(R.font.dmsans_thin, FontWeight.Thin),
+    Font(R.font.dmsans_extralight, FontWeight.ExtraLight),
+    Font(R.font.dmsans_light, FontWeight.Light),
+    Font(R.font.dmsans_regular, FontWeight.Normal),
+    Font(R.font.dmsans_medium, FontWeight.Medium),
+    Font(R.font.dmsans_semibold, FontWeight.SemiBold),
+    Font(R.font.dmsans_bold, FontWeight.Bold),
+    Font(R.font.dmsans_extrabold, FontWeight.ExtraBold),
+    Font(R.font.dmsans_black, FontWeight.Black),
 )
 
-// Apply: Montserrat for titles/headlines/displays; DMSans for body/labels.
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = DMSans,
