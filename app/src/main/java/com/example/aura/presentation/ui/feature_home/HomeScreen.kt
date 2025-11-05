@@ -15,66 +15,55 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlin.math.abs
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aura.AuraApp
+import com.example.aura.di.AppContainer
+import com.example.aura.presentation.ui.theme.AuraTheme
+import com.example.aura.core.ResultWrapper
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(modifier: Modifier = Modifier, container: AppContainer) {
+    val factory = HomeViewModelFactory(container.examUseCases)
+    val viewModel: HomeViewModel = viewModel(factory = factory)
+    val uiState by viewModel.uiState.collectAsState()
+
     val listState = rememberLazyListState()
-
-    val nestedScrollConnection = remember(listState) {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (source != NestedScrollSource.UserInput) return Offset.Zero
-                // só interessam gestos horizontais
-                if (abs(available.x) <= abs(available.y)) return Offset.Zero
-
-                val layoutInfo = listState.layoutInfo
-                val totalItems = layoutInfo.totalItemsCount
-                val visible = layoutInfo.visibleItemsInfo
-
-                val canScrollBackward = listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
-                val lastVisibleIndex = visible.lastOrNull()?.index ?: 0
-                val canScrollForward = totalItems > 0 && lastVisibleIndex < totalItems - 1
-
-                val scrollingRight = available.x > 0f // dedo movendo pra direita -> conteúdo tenta rolar pra direita (voltar)
-                val scrollingLeft = !scrollingRight
-
-                // se a LazyRow PODE rolar na direção do gesto, NÃO consome aqui (deixa a LazyRow processar)
-                val lazyCanScrollInDirection = (scrollingRight && canScrollBackward) || (scrollingLeft && canScrollForward)
-
-                return if (lazyCanScrollInDirection) {
-                    Offset.Zero
-                } else {
-                    // se a LazyRow NÃO PODE rolar (está no limite), consome o horizontal para evitar que o pager pai receba o swipe
-                    Offset(x = available.x, y = 0f)
-                }
-            }
-        }
-    }
 
     val actions = listOf(
         ActionItem(Icons.Default.Folder, "Ver Exames", "Acesse seu histórico completo"),
         ActionItem(Icons.Default.Description, "Adicionar Novo", "Faça upload de um novo resultado"),
         ActionItem(Icons.AutoMirrored.Filled.ShowChart, "Tendências e Relatórios", "Visualize seus dados de saúde")
     )
+
+    fun formatDate(millis: Long): String {
+        return try {
+            val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            df.format(Date(millis))
+        } catch (_: Exception) {
+            millis.toString()
+        }
+    }
 
     Surface(
         modifier = modifier
@@ -106,22 +95,66 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 )
             }
 
-            val exams = listOf(
-                Pair("Hemograma", "15/07/2024"),
-                Pair("Raio-X Tórax", "02/06/2024"),
-                Pair("Ultrassom", "23/11/2024"),
-            )
+            when (uiState) {
+                is ResultWrapper.Loading -> {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        LoadingIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 24.dp)
+                        )
+                    }
+                }
 
-            LazyRow(
-                state = listState,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(start = 12.dp, end = 12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-//                    .nestedScroll(nestedScrollConnection),
-            ) {
-                items(exams) { exam ->
-                    ExamCard(title = exam.first, date = exam.second)
+                is ResultWrapper.Success -> {
+                    val exams = (uiState as ResultWrapper.Success).value
+
+                    if (exams.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "Nenhum exame encontrado",
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    } else {
+                        LazyRow(
+                            state = listState,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(start = 12.dp, end = 12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                        ) {
+                            items(exams) { exam ->
+                                ExamCard(title = exam.title, date = formatDate(exam.date))
+                            }
+                        }
+                    }
+                }
+
+                is ResultWrapper.Error -> {
+                    val err = (uiState as ResultWrapper.Error).throwable
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Erro ao carregar exames:",
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = err.localizedMessage ?: "Erro desconhecido",
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.refresh() }) {
+                            Text(text = "Tentar novamente")
+                        }
+                    }
                 }
             }
         }
@@ -217,12 +250,14 @@ private fun ExamCard(title: String, date: String) {
                 }
             }
 
-            Column(modifier = Modifier.padding(start = 16.dp, bottom = 14.dp)) {
+            Column(modifier = Modifier.padding(start = 16.dp, bottom = 14.dp, end = 16.dp)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
@@ -238,8 +273,9 @@ private fun ExamCard(title: String, date: String) {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    // Wrap preview with app theme so colors/typography render
-    com.example.aura.presentation.ui.theme.AuraTheme {
-        HomeScreen()
+    AuraTheme {
+        HomeScreen(
+            container = AppContainer(AuraApp())
+        )
     }
 }

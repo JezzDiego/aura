@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                 ) {
                     val navController = rememberNavController()
-                    AuraNavHost(navController)
+                    AuraNavHost(navController, container = container)
                 }
             }
         }

@@ -7,7 +7,6 @@ import com.example.aura.data.mapper.toEntity
 import com.example.aura.domain.model.Exam
 import com.example.aura.domain.model.ShareLink
 import com.example.aura.domain.repository.ExamRepository
-import com.example.aura.core.ResultWrapper
 import com.example.aura.data.mapper.toDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,7 +22,6 @@ class ExamRepositoryImpl(
         if (localExams.isNotEmpty()) {
             localExams.map { it.toDomain() }
         } else {
-            // Chama a API e salva no banco
             val apiExams = api.getExams().map { it.toDomain() }
             dao.insertAll(apiExams.map { it.toEntity() })
             apiExams

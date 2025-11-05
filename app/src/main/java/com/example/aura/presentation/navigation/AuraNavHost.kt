@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
 
@@ -48,7 +49,7 @@ val bottomNavBarItems = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuraNavHost(navController: NavHostController) {
+fun AuraNavHost(navController: NavHostController, container: AppContainer) {
     NavHost(navController = navController, startDestination = NavPager) {
         composable<NavPager> {
             var selectedItem by remember {
@@ -114,7 +115,7 @@ fun AuraNavHost(navController: NavHostController) {
                     HorizontalPager(pageState) { page ->
                         val item = bottomNavBarItems[page]
                         when (item) {
-                            BottomNavBarItem.HomeNavBarItem -> HomeScreen()
+                            BottomNavBarItem.HomeNavBarItem -> HomeScreen(container = container)
                             BottomNavBarItem.ExamNavBarItem -> ExamScreen()
                             BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
                             BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()

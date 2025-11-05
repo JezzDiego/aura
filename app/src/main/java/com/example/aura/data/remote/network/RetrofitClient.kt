@@ -1,24 +1,18 @@
 package com.example.aura.data.remote.network
 
 import okhttp3.OkHttpClient
-//import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://api.my-aura.com/v1/"
+    private const val BASE_URL = "https://my-json-server.typicode.com/jezzdiego/fake-db/"
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-//            .addInterceptor(
-//                HttpLoggingInterceptor().apply {
-//                    level = HttpLoggingInterceptor.Level.BODY
-//                }
-//            )
             .build()
     }
 
@@ -30,4 +24,5 @@ object RetrofitClient {
             .build()
     }
 }
+
 
