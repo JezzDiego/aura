@@ -2,15 +2,12 @@ package com.example.aura.presentation.ui.feature_home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -20,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,32 +26,44 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.aura.AuraApp
 import com.example.aura.di.AppContainer
-import com.example.aura.presentation.ui.theme.AuraTheme
 import com.example.aura.core.ResultWrapper
+import com.example.aura.presentation.navigation.BottomNavBarItem
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String)
+data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String, val navigate: () -> Unit = {})
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, container: AppContainer) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    container: AppContainer,
+    swipeNavigate: (BottomNavBarItem) -> Unit = {}
+) {
     val factory = HomeViewModelFactory(container.examUseCases)
     val viewModel: HomeViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
 
-    val listState = rememberLazyListState()
-
     val actions = listOf(
-        ActionItem(Icons.Default.Folder, "Ver Exames", "Acesse seu histórico completo"),
-        ActionItem(Icons.Default.Description, "Adicionar Novo", "Faça upload de um novo resultado"),
-        ActionItem(Icons.AutoMirrored.Filled.ShowChart, "Tendências e Relatórios", "Visualize seus dados de saúde")
+        ActionItem(
+            Icons.Default.Folder,
+            title = "Ver Exames", "Acesse seu histórico completo",
+            navigate = { swipeNavigate(BottomNavBarItem.ExamNavBarItem) }
+        ),
+        ActionItem(
+            Icons.Default.Description,
+            title = "Adicionar Novo",
+            subtitle = "Faça upload de um novo resultado",
+        ),
+        ActionItem(
+            Icons.AutoMirrored.Filled.ShowChart,
+            title = "Tendências e Relatórios",
+            subtitle = "Visualize seus dados de saúde"
+        )
     )
 
     fun formatDate(millis: Long): String {
@@ -116,16 +126,42 @@ fun HomeScreen(modifier: Modifier = Modifier, container: AppContainer) {
                             )
                         }
                     } else {
-                        LazyRow(
-                            state = listState,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(start = 12.dp, end = 12.dp),
+                        val display = exams.take(4)
+                        val cardAspect = 170f / 120f
+
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp),
+                                .padding(horizontal = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(exams) { exam ->
-                                ExamCard(title = exam.title, date = formatDate(exam.date))
+                            for (row in 0..1) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    for (col in 0..1) {
+                                        val idx = row * 2 + col
+                                        val exam = display.getOrNull(idx)
+
+                                        Box(modifier = Modifier.weight(1f)) {
+                                            if (exam != null) {
+                                                ExamCard(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .aspectRatio(cardAspect),
+                                                    title = exam.title,
+                                                    date = formatDate(exam.date),
+                                                )
+                                            } else {
+                                                Spacer(modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .aspectRatio(cardAspect))
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -169,7 +205,7 @@ private fun ActionCard(item: ActionItem) {
             .fillMaxWidth()
             .height(80.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = { /* TODO: ação ao clicar */ }
+        onClick = { item.navigate() }
     ) {
         Row(
             modifier = Modifier
@@ -219,18 +255,21 @@ private fun ActionCard(item: ActionItem) {
 }
 
 @Composable
-private fun ExamCard(title: String, date: String) {
+private fun ExamCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    date: String,
+    color: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+    ) {
     Card(
         shape = RoundedCornerShape(18.dp),
-        modifier = Modifier
-            .width(170.dp)
-            .height(120.dp),
+        modifier = modifier,
+        colors = color,
         onClick = { /* TODO: ação ao clicar */ }
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primaryContainer),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -270,12 +309,3 @@ private fun ExamCard(title: String, date: String) {
     }
 }
 
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    AuraTheme {
-        HomeScreen(
-            container = AppContainer(AuraApp())
-        )
-    }
-}

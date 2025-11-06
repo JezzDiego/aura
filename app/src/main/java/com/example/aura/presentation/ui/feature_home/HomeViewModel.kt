@@ -7,7 +7,6 @@ import com.example.aura.domain.model.Exam
 import com.example.aura.domain.usecase.exam.ExamUseCases
 import com.example.aura.domain.usecase.exam.GetExamListUseCase
 import com.example.aura.core.ResultWrapper
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -28,7 +27,6 @@ class HomeViewModel(private val getExamList: GetExamListUseCase) : BaseViewModel
 
         executeSafeCall(
             block = {
-                delay(1000)
                 getExamList()
             },
             onSuccess = {
