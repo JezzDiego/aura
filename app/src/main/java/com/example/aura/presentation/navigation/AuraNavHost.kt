@@ -134,7 +134,9 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                                 container = container,
                                 swipeNavigate = { toItem -> swipeNavigate(toItem) }
                             )
-                            BottomNavBarItem.ExamNavBarItem -> ExamScreen()
+                            BottomNavBarItem.ExamNavBarItem -> ExamScreen(
+                                container = container
+                            )
                             BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
                             BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
                         }
@@ -145,7 +147,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
         }
 
         composable<ExamRoute> {
-            ExamScreen()
+            ExamScreen(container = container)
         }
     }
 }

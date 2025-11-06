@@ -1,7 +1,9 @@
 package com.example.aura.presentation.ui.feature_home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -31,9 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.aura.utils.formatDate
 
 data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String, val navigate: () -> Unit = {})
 
@@ -66,21 +66,17 @@ fun HomeScreen(
         )
     )
 
-    fun formatDate(millis: Long): String {
-        return try {
-            val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            df.format(Date(millis))
-        } catch (_: Exception) {
-            millis.toString()
-        }
-    }
-
     Surface(
         modifier = modifier
             .fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        // Apply verticalScroll to the main column so the entire screen becomes scrollable
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = "Olá, Jessé",
@@ -255,7 +251,7 @@ private fun ActionCard(item: ActionItem) {
 }
 
 @Composable
-private fun ExamCard(
+fun ExamCard(
     modifier: Modifier = Modifier,
     title: String,
     date: String,
@@ -299,6 +295,7 @@ private fun ExamCard(
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
                     text = date,
                     style = MaterialTheme.typography.bodySmall,
@@ -308,4 +305,3 @@ private fun ExamCard(
         }
     }
 }
-
