@@ -29,16 +29,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
+import kotlinx.coroutines.launch
 
 
 @Serializable
-object NavPager
+object HomeRoute
+
+@Serializable
+object ExamRoute
 
 val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
@@ -50,8 +55,8 @@ val bottomNavBarItems = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuraNavHost(navController: NavHostController, container: AppContainer) {
-    NavHost(navController = navController, startDestination = NavPager) {
-        composable<NavPager> {
+    NavHost(navController = navController, startDestination = HomeRoute) {
+        composable<HomeRoute> {
             var selectedItem by remember {
                 val item = bottomNavBarItems.first()
                 mutableStateOf(item)
@@ -77,7 +82,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                 topBar = {
                     TopAppBar(
                         modifier = Modifier,
-                        title = { Unit },
+                        title = {},
                         actions = {
                             Row (
                                 modifier = Modifier
@@ -114,9 +119,24 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                 ) {
                     HorizontalPager(pageState) { page ->
                         val item = bottomNavBarItems[page]
+                        val coroutineScope = rememberCoroutineScope()
+
+                        fun swipeNavigate(toItem: BottomNavBarItem) {
+                            val targetIndex = bottomNavBarItems.indexOf(toItem)
+                            coroutineScope.launch {
+                                pageState.animateScrollToPage(targetIndex)
+                            }
+
+                        }
+
                         when (item) {
-                            BottomNavBarItem.HomeNavBarItem -> HomeScreen(container = container)
-                            BottomNavBarItem.ExamNavBarItem -> ExamScreen()
+                            BottomNavBarItem.HomeNavBarItem -> HomeScreen(
+                                container = container,
+                                swipeNavigate = { toItem -> swipeNavigate(toItem) }
+                            )
+                            BottomNavBarItem.ExamNavBarItem -> ExamScreen(
+                                container = container
+                            )
                             BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
                             BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
                         }
@@ -124,6 +144,10 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                 }
 
             }
+        }
+
+        composable<ExamRoute> {
+            ExamScreen(container = container)
         }
     }
 }

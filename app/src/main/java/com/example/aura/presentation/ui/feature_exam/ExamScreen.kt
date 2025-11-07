@@ -4,53 +4,56 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aura.core.ResultWrapper
+import com.example.aura.di.AppContainer
+import com.example.aura.domain.model.Category
+import com.example.aura.utils.formatDate
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun ExamScreen() {
-    // sample data
-    val exams = listOf(
-        ExamItem(
-            title = "Hemograma Completo",
-            subtitle = "Laboratório: Lab Exemplo",
-            date = "25/08/2023",
-            tag = "Sangue"
-        ),
-        ExamItem(
-            title = "Raio-X do Tórax",
-            subtitle = "Clínica: Imagem Digital",
-            date = "15/07/2023",
-            tag = "Imagem"
-        ),
-        ExamItem(
-            title = "Ecocardiograma",
-            subtitle = "Clínica: CardioCenter",
-            date = "02/06/2023",
-            tag = "Cardiológico"
-        )
+fun ExamScreen(
+    container: AppContainer,
+) {
+    val factory = ExamViewModelFactory(container.examUseCases)
+    val viewModel: ExamViewModel = viewModel(factory = factory)
+    val uiState by viewModel.uiState.collectAsState()
+
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = false,
+        onRefresh = { viewModel.refresh() }
     )
 
     Surface(
@@ -60,7 +63,6 @@ fun ExamScreen() {
         color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -75,7 +77,6 @@ fun ExamScreen() {
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                // novo button - small icon + text
                 Card(
                     onClick = { /* TODO */ },
                     shape = MaterialTheme.shapes.small,
@@ -104,22 +105,98 @@ fun ExamScreen() {
                     }
                 }
             }
-
-            // List of cards
-            LazyColumn(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize(),
-                content = {
-                    items(exams) { exam ->
-                        ExamCard(exam = exam)
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState)
+            ) {
+                when (uiState) {
+                    is ResultWrapper.Loading -> {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            LoadingIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 24.dp)
+                            )
+                        }
+                    }
+
+                    is ResultWrapper.Success -> {
+                        val exams = (uiState as ResultWrapper.Success).value
+
+                        if (exams.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "Nenhum exame encontrado",
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                content = {
+                                    items(exams) { exam ->
+                                        val tagText = Category.entries.getOrNull(exam.category.ordinal)?.displayName
+                                            ?: "Categoria desconhecida"
+
+                                        ExamCard(
+                                            exam = ExamItem(
+                                                title = exam.title,
+                                                subtitle = exam.laboratory?.name
+                                                    ?: "Laboratório desconhecido",
+                                                date = formatDate(
+                                                    exam.date
+                                                ),
+                                                tag = tagText
+                                            )
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    is ResultWrapper.Error -> {
+                        val err = (uiState as ResultWrapper.Error).throwable
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(20.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Erro ao carregar exames:",
+                                color = MaterialTheme.colorScheme.onBackground,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = err.localizedMessage ?: "Erro desconhecido",
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { viewModel.refresh() }) {
+                                Text(text = "Tentar novamente")
+                            }
+                        }
                     }
                 }
-            )
+
+                // Pull-to-refresh indicator overlay
+                PullRefreshIndicator(
+                    refreshing = false,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 8.dp),
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    backgroundColor = MaterialTheme.colorScheme.surface
+                )
+            }
         }
     }
 }
 
-private data class ExamItem(
+data class ExamItem(
     val title: String,
     val subtitle: String,
     val date: String,
@@ -127,7 +204,7 @@ private data class ExamItem(
 )
 
 @Composable
-private fun ExamCard(exam: ExamItem) {
+fun ExamCard(exam: ExamItem) {
     val shape = MaterialTheme.shapes.medium
 
     Card(
@@ -176,7 +253,7 @@ private fun ExamCard(exam: ExamItem) {
 }
 
 @Composable
-private fun TagPill(text: String) {
+fun TagPill(text: String) {
     Card(
         shape = MaterialTheme.shapes.small,
         colors = CardDefaults.cardColors(
@@ -196,10 +273,4 @@ private fun TagPill(text: String) {
             )
         }
     }
-}
-
-@Preview
-@Composable
-private fun ExamScreenPreview() {
-    ExamScreen()
 }
