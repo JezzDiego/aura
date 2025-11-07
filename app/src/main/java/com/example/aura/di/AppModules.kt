@@ -83,10 +83,7 @@ class AppContainer(context: Context) {
 
     val userUseCases: UserUseCases by lazy {
         UserUseCases(
-            getProfile = GetUserProfileUseCase(userRepository),
-            updateProfile = UpdateUserProfileUseCase(userRepository),
-            deleteAccount = DeleteAccountUseCase(userRepository),
-            checkPremiumStatus = CheckPremiumStatusUseCase(userRepository)
+            loginUser = LoginUseCase(userRepository)
         )
     }
 
