@@ -83,7 +83,7 @@ class AppContainer(context: Context) {
 
     val userUseCases: UserUseCases by lazy {
         UserUseCases(
-            loginUser = LoginUseCase(userRepository)
+            loginUser = LoginUserUseCase(userRepository)
         )
     }
 

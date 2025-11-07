@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,13 +41,25 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aura.core.ResultWrapper
+import com.example.aura.domain.usecase.user.LoginUserUseCase
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loginUserUseCase: LoginUserUseCase
 ){
+    val factory = remember { LoginViewModelFactory(loginUserUseCase)}
+    val viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
+
+    val loginState by viewModel.uiState.collectAsState()
+
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+
     Surface(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -78,22 +91,34 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(25.dp))
 
-            EmailInput()
+            EmailInput(
+                email = email,
+                onEmailChange = { email = it }
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            PasswordInput()
+            PasswordInput(
+                password = password,
+                onPasswordChange = { password = it }
+            )
 
             Spacer(modifier = Modifier.height(25.dp))
 
             Button(
-                onClick = {},
+                onClick = {viewModel.login(email, password)},
                 modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(999.dp)
             ) {
                 Text("Entrar", fontSize = 18.sp)
+            }
+
+            when(val state = loginState){
+                is ResultWrapper.Loading -> Text("")
+                is ResultWrapper.Success -> Text("Bem-vindo")
+                is ResultWrapper.Error -> Text("Erro")
             }
 
         }
@@ -103,12 +128,11 @@ fun LoginScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmailInput(){
-    var email by remember { mutableStateOf("") }
+fun EmailInput(email: String, onEmailChange: (String) -> Unit){
 
     OutlinedTextField(
         value = email,
-        onValueChange = {email = it},
+        onValueChange = onEmailChange,
         label = {Text("E-mail")},
         leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -120,13 +144,12 @@ fun EmailInput(){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordInput(){
-    var password by remember { mutableStateOf("") }
+fun PasswordInput(password: String, onPasswordChange: (String) -> Unit){
     var passwordVisible by remember { mutableStateOf(false) }
 
     OutlinedTextField(
         value = password,
-        onValueChange = {password = it},
+        onValueChange = onPasswordChange,
         label = {Text("Senha")},
         singleLine = true,
         modifier = Modifier.fillMaxWidth(),
@@ -145,11 +168,4 @@ fun PasswordInput(){
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         shape = RoundedCornerShape(999.dp)
     )
-}
-
-
-@Preview
-@Composable
-fun PreviewLoginScreen(){
-    LoginScreen()
 }
