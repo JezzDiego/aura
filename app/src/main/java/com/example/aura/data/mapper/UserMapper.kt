@@ -9,25 +9,10 @@ fun UserDTO.toDomain(): User {
         id = id,
         name = name,
         email = email,
+        password = password,
         birthDate = birthDate,
         gender = gender,
         subscriptionPlan = plan.let { subscriptionPlan ->
-            when (subscriptionPlan) {
-                SubscriptionPlan.FREE -> SubscriptionPlan.FREE
-                SubscriptionPlan.PREMIUM -> SubscriptionPlan.PREMIUM
-            }
-        },
-    )
-}
-
-fun User.toDto(): UserDTO {
-    return UserDTO(
-        id = id,
-        name = name,
-        email = email,
-        birthDate = birthDate,
-        gender = gender,
-        plan = subscriptionPlan.let { subscriptionPlan ->
             when (subscriptionPlan) {
                 SubscriptionPlan.FREE -> SubscriptionPlan.FREE
                 SubscriptionPlan.PREMIUM -> SubscriptionPlan.PREMIUM

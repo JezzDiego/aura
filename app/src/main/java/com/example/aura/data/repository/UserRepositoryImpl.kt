@@ -17,8 +17,8 @@ class UserRepositoryImpl(
     override suspend fun loginUser(email: String, password: String): User? {
         return withContext(Dispatchers.IO){
             val users = api.getUsers()
-            val user = users.find { it.email == email && it.password == password }
-            user?.toDomain()
+            users.map {it.toDomain()}
+                .find{it.email == email && it.password == password}
         }
     }
 
