@@ -14,22 +14,13 @@ class UserRepositoryImpl(
 
     private var cachedUser: User? = null
 
-    override suspend fun getUserProfile(): User = withContext(Dispatchers.IO) {
-        cachedUser ?: api.getUserProfile().toDomain().also { cachedUser = it }
+    override suspend fun loginUser(email: String, password: String): User? {
+        return withContext(Dispatchers.IO){
+            val users = api.getUsers()
+            val user = users.find { it.email == email && it.password == password }
+            user?.toDomain()
+        }
     }
 
-    override suspend fun updateUserProfile(user: User): User = withContext(Dispatchers.IO) {
-        val updated = api.updateUser(user.toDto()).toDomain()
-        cachedUser = updated
-        updated
-    }
 
-    override suspend fun deleteAccount(userId: String) = withContext(Dispatchers.IO) {
-        api.deleteAccount(userId)
-        cachedUser = null
-    }
-
-    override suspend fun isUserPremium(): Boolean = withContext(Dispatchers.IO) {
-        cachedUser?.subscriptionPlan?.name == "PREMIUM"
-    }
 }
