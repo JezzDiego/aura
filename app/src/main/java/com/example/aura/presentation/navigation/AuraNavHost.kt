@@ -35,9 +35,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
+import com.example.aura.presentation.ui.feature_login.LoginScreen
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
 import kotlinx.coroutines.launch
 
+@Serializable
+object LoginRoute
 
 @Serializable
 object HomeRoute
@@ -55,7 +58,12 @@ val bottomNavBarItems = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuraNavHost(navController: NavHostController, container: AppContainer) {
-    NavHost(navController = navController, startDestination = HomeRoute) {
+    NavHost(navController = navController, startDestination = LoginRoute) {
+
+        composable<LoginRoute> {
+            LoginScreen()
+        }
+
         composable<HomeRoute> {
             var selectedItem by remember {
                 val item = bottomNavBarItems.first()
