@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://my-json-server.typicode.com/Felipe-MML/Aura-UsersAPI/"
+    private const val BASE_URL = "https://my-json-server.typicode.com/jezzdiego/fake-db/"
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
