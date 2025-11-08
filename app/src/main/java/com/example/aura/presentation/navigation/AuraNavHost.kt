@@ -61,7 +61,17 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
     NavHost(navController = navController, startDestination = LoginRoute) {
 
         composable<LoginRoute> {
-            LoginScreen(loginUserUseCase = container.userUseCases.loginUser)
+            LoginScreen(loginUserUseCase = container.userUseCases.loginUser,
+                onLoginSucces = {
+                    navController.navigate(HomeRoute){
+                        popUpTo(LoginRoute){
+                            inclusive = true
+                        }
+                    }
+
+
+                }
+                )
         }
 
         composable<HomeRoute> {

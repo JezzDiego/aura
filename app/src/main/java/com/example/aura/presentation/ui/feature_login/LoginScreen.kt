@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,12 +50,19 @@ import com.example.aura.domain.usecase.user.LoginUserUseCase
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    loginUserUseCase: LoginUserUseCase
+    loginUserUseCase: LoginUserUseCase,
+    onLoginSucces: () -> Unit,
 ){
     val factory = remember { LoginViewModelFactory(loginUserUseCase)}
     val viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
 
     val loginState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(loginState) {
+        if (loginState is ResultWrapper.Success){
+            onLoginSucces()
+        }
+    }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
