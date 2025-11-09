@@ -41,9 +41,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.aura.domain.repository.UserRepository
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    navController: NavController,
+    userRepository: UserRepository,
+    onLogoutSucess: () -> Unit,
+) {
+
+    val viewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModelFactory(userRepository)
+    )
+
     val backupEnabled = remember { mutableStateOf(true) }
     val darkThemeEnabled = remember { mutableStateOf(false) }
 
@@ -160,7 +172,11 @@ fun SettingsScreen() {
             Spacer(modifier = Modifier.size(18.dp))
 
             Button(
-                onClick = { /* sair da conta */ },
+                onClick = {
+                    viewModel.logout{
+                        onLogoutSucess()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
@@ -219,10 +235,4 @@ private fun SettingRow(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun SettingsScreenPreview() {
-    SettingsScreen()
 }

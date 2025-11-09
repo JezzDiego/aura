@@ -1,5 +1,7 @@
 package com.example.aura.data.repository
 
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.datasource.UserLocalDataSource
 import com.example.aura.data.remote.api.UserApi
 import com.example.aura.data.mapper.toDomain
@@ -28,7 +30,8 @@ class UserRepositoryImpl(
                     name = it.name,
                     email = it.email,
                     birthDate = it.birthDate,
-                    gender = it.gender
+                    gender = it.gender,
+                    healthInsurance = it.healthInsurance
                 )
                 localDataSource.saveUser(entity)
             }
@@ -36,6 +39,14 @@ class UserRepositoryImpl(
             user
         }
     }
+
+    override suspend fun logout() {
+        withContext(Dispatchers.IO) {
+            localDataSource.clearUser()
+            cachedUser = null
+        }
+    }
+
 
 
 }

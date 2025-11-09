@@ -156,7 +156,19 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                                 container = container
                             )
                             BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(container)
-                            BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
+                            BottomNavBarItem.SettingsNavBarItem -> SettingsScreen(
+                                navController = navController,
+                                userRepository = container.userRepository,
+                                onLogoutSucess = {
+                                    navController.navigate(LoginRoute){
+                                        popUpTo(0){
+                                            inclusive = true
+                                        }
+                                    }
+
+
+                                }
+                            )
                         }
                     }
                 }

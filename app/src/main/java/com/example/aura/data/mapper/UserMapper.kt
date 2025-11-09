@@ -13,6 +13,7 @@ fun UserDTO.toDomain(): User {
         password = password,
         birthDate = birthDate,
         gender = gender,
+        healthInsurance = healthInsurance,
         subscriptionPlan = plan.let { subscriptionPlan ->
             when (subscriptionPlan) {
                 SubscriptionPlan.FREE -> SubscriptionPlan.FREE
@@ -28,6 +29,7 @@ fun UserEntity.toEntity(): UserEntity{
         name = name,
         email = email,
         birthDate = birthDate,
-        gender = gender
+        gender = gender,
+        healthInsurance = healthInsurance
     )
 }

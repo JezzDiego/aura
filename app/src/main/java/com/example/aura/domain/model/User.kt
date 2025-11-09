@@ -7,5 +7,6 @@ data class User(
     val password: String,
     val birthDate: String?,
     val gender: String?,
+    val healthInsurance: String?,
     val subscriptionPlan: SubscriptionPlan = SubscriptionPlan.FREE,
 )

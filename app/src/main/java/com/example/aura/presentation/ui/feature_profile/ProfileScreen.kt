@@ -143,7 +143,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 ReadOnlyField(label = "Gênero", value = user?.gender ?: "" )
                 Spacer(modifier = Modifier.height(12.dp))
-                ReadOnlyField(label = "Convênio Médico", value = "Unimed")
+                ReadOnlyField(label = "Convênio Médico", value = user?.healthInsurance ?: "")
 
                 Spacer(modifier = Modifier.height(20.dp))
 
