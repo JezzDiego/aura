@@ -31,7 +31,8 @@ class UserRepositoryImpl(
                     email = it.email,
                     birthDate = it.birthDate,
                     gender = it.gender,
-                    healthInsurance = it.healthInsurance
+                    healthInsurance = it.healthInsurance,
+                    profileImageUrl = it.profileImageUrl
                 )
                 localDataSource.saveUser(entity)
             }

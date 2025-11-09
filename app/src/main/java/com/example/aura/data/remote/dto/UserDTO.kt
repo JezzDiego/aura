@@ -11,5 +11,6 @@ data class UserDTO(
     @SerializedName("birthDate") val birthDate: String?,
     @SerializedName("gender") val gender: String?,
     @SerializedName("healthInsurance") val healthInsurance: String?,
+    @SerializedName("profileImageUrl")val profileImageUrl: String,
     @SerializedName("plan") val plan: SubscriptionPlan
 )

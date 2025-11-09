@@ -2,6 +2,7 @@ package com.example.aura.presentation.ui.feature_profile
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,10 +34,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.aura.di.AppContainer
 
 @Composable
@@ -104,15 +107,17 @@ fun ProfileScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             // circular border
-                            Box(
+                            Image(
+                                painter = rememberAsyncImagePainter(model = user?.profileImageUrl),
+                                contentDescription = "Foto de perfil",
                                 modifier = Modifier
                                     .size(72.dp)
                                     .clip(CircleShape)
                                     .border(
                                         BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
                                         CircleShape
-                                    )
-                            )
+                                    ),
+                                contentScale = ContentScale.Crop)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -145,60 +150,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 ReadOnlyField(label = "Convênio Médico", value = user?.healthInsurance ?: "")
 
-                Spacer(modifier = Modifier.height(20.dp))
 
-                // Assinatura section
-                Text(
-                    text = "Assinatura",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.WorkspacePremium,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-
-                        Spacer(modifier = Modifier.size(12.dp))
-
-                        Text(
-                            text = "Gerenciar Assinatura Premium",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(56.dp)) // espaço para o FAB
-            }
-
-            // Floating edit FAB anchored bottom-end
-            FloatingActionButton(
-                onClick = { /* editar perfil */ },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar")
             }
         }
     }

@@ -9,5 +9,6 @@ data class UserEntity (
     val email: String,
     val birthDate: String?,
     val gender: String?,
-    val healthInsurance: String?
+    val healthInsurance: String?,
+    val profileImageUrl: String,
 )

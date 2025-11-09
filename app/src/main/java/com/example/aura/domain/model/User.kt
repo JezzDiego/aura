@@ -8,5 +8,6 @@ data class User(
     val birthDate: String?,
     val gender: String?,
     val healthInsurance: String?,
+    val profileImageUrl: String,
     val subscriptionPlan: SubscriptionPlan = SubscriptionPlan.FREE,
 )
