@@ -33,11 +33,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_login.LoginScreen
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
 import kotlinx.coroutines.launch
+import com.example.aura.di.AppContainer
 
 @Serializable
 object LoginRoute
@@ -155,7 +155,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                             BottomNavBarItem.ExamNavBarItem -> ExamScreen(
                                 container = container
                             )
-                            BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
+                            BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(container)
                             BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
                         }
                     }

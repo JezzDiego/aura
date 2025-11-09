@@ -4,13 +4,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.aura.presentation.ui.feature_profile.ProfileScreen
+import com.example.aura.di.AppContainer
 
 const val profileRoute = "profileRoute"
 
 
-fun NavGraphBuilder.profileScreen(navController: NavController) {
+fun NavGraphBuilder.profileScreen(navController: NavController, container: AppContainer) {
     composable(profileRoute) {
-        ProfileScreen()
+        ProfileScreen(container)
     }
 }
 

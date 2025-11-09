@@ -1,5 +1,6 @@
 package com.example.aura.presentation.ui.feature_profile
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,10 +31,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.aura.di.AppContainer
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    container: AppContainer,
+) {
+
+    val viewModel = remember {
+        ProfileViewModelFactory(container.userDao)
+    }.let { factory ->
+        ViewModelProvider(LocalContext.current as ComponentActivity, factory)
+            .get(ProfileViewModel::class.java)
+    }
+
+
+    val user = viewModel.user.collectAsState().value
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -98,7 +118,7 @@ fun ProfileScreen() {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Ana Carolina",
+                            text = user?.name ?: "",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -117,11 +137,11 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Fields
-                ReadOnlyField(label = "Nome Completo", value = "Ana Carolina Silva")
+                ReadOnlyField(label = "Nome Completo", value = user?.name ?: "")
                 Spacer(modifier = Modifier.height(12.dp))
-                ReadOnlyField(label = "Data de Nascimento", value = "25/08/1990")
+                ReadOnlyField(label = "Data de Nascimento", value = user?.birthDate ?: "")
                 Spacer(modifier = Modifier.height(12.dp))
-                ReadOnlyField(label = "Gênero", value = "Feminino")
+                ReadOnlyField(label = "Gênero", value = user?.gender ?: "" )
                 Spacer(modifier = Modifier.height(12.dp))
                 ReadOnlyField(label = "Convênio Médico", value = "Unimed")
 
@@ -210,10 +230,4 @@ private fun ReadOnlyField(label: String, value: String) {
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun ProfileScreenPreview() {
-    ProfileScreen()
 }

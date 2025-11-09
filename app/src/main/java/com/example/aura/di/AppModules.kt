@@ -47,7 +47,7 @@ class AppContainer(context: Context) {
     private val examDao: ExamDao by lazy { database.examDao() }
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
 
-    private val userDao: UserDao by lazy { database.userDao() }
+    val userDao: UserDao by lazy { database.userDao() }
 
     val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
     // APIs
