@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
+import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.datasource.ExamLocalDataSource
 import com.example.aura.data.local.datasource.LaboratoryLocalDataSource
+import com.example.aura.data.local.datasource.UserLocalDataSource
 import com.example.aura.data.local.db.AuraDatabase
 import com.example.aura.data.local.preferences.AuraPreferences
 import com.example.aura.data.remote.api.ExamApi
@@ -45,6 +47,9 @@ class AppContainer(context: Context) {
     private val examDao: ExamDao by lazy { database.examDao() }
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
 
+    private val userDao: UserDao by lazy { database.userDao() }
+
+    val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
     // APIs
     private val examApi: ExamApi by lazy { retrofit.create(ExamApi::class.java) }
     private val laboratoryApi: LaboratoryApi by lazy { retrofit.create(LaboratoryApi::class.java) }
@@ -60,7 +65,7 @@ class AppContainer(context: Context) {
     // Repositories (currently depend directly on Api/Dao; ready for future refactor to use DS)
     val examRepository: ExamRepository by lazy { ExamRepositoryImpl(api = examApi, dao = examDao) }
     val laboratoryRepository: LaboratoryRepository by lazy { LaboratoryRepositoryImpl(api = laboratoryApi) }
-    val userRepository: UserRepository by lazy { UserRepositoryImpl(api = userApi) }
+    val userRepository: UserRepository by lazy { UserRepositoryImpl(api = userApi, localDataSource = userLocalDataSource) }
 
     // Use cases
     val examUseCases: ExamUseCases by lazy {
