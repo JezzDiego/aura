@@ -16,6 +16,5 @@ import com.example.aura.data.local.entity.*
 abstract class AuraDatabase : RoomDatabase() {
     abstract fun examDao(): ExamDao
     abstract fun laboratoryDao(): LaboratoryDao
-
     abstract fun userDao(): UserDao
 }

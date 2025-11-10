@@ -11,6 +11,13 @@ class LoginUserUseCase(
 
 }
 
+class LogoutUserUseCase(
+    private val userRepository: UserRepository
+) {
+    suspend operator fun invoke(): Unit = userRepository.logout()
+
+}
+
 class GetUserListUseCase(private val repository: UserRepository) {
     suspend operator fun invoke(): List<User> = repository.getAllUsers()
 }
@@ -21,6 +28,7 @@ class GetLocalUserUseCase(private val repository: UserRepository) {
 
 data class UserUseCases(
     val loginUser: LoginUserUseCase,
+    val logoutUser: LogoutUserUseCase,
     val getAllUsers: GetUserListUseCase,
     val getLocalUser: GetLocalUserUseCase
 )

@@ -1,5 +1,6 @@
 package com.example.aura.di
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.example.aura.data.local.dao.ExamDao
@@ -31,7 +32,8 @@ import retrofit2.Retrofit
 /**
  * Manual DI container. Instantiate once (e.g., in Application) and access its singletons.
  */
-class AppContainer(context: Context) {
+class AppContainer(context: Context, app: Application) {
+    val application = app
 
     // Core singletons
     private val retrofit: Retrofit by lazy { RetrofitClient.instance }
@@ -108,7 +110,8 @@ class AppContainer(context: Context) {
         UserUseCases(
             loginUser = LoginUserUseCase(userRepository),
             getAllUsers = GetUserListUseCase(userRepository),
-            getLocalUser = GetLocalUserUseCase(userRepository)
+            getLocalUser = GetLocalUserUseCase(userRepository),
+            logoutUser = LogoutUserUseCase(userRepository)
         )
     }
 

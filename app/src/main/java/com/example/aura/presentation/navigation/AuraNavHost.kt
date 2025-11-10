@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_login.LoginScreen
-import com.example.aura.presentation.ui.feature_settings.SettingsScreen
 import kotlinx.coroutines.launch
 import com.example.aura.di.AppContainer
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +54,6 @@ val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
     BottomNavBarItem.ExamNavBarItem,
     BottomNavBarItem.ProfileNavBarItem,
-    BottomNavBarItem.SettingsNavBarItem,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,34 +108,10 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                     selectedItem = bottomNavBarItems[pageState.targetPage]
                 }
 
-                val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
-
                 Scaffold(
                     topBar = {
-                        TopAppBar(
-                            modifier = Modifier,
-                            title = {},
-                            actions = {
-                                Row(
-                                    modifier = Modifier
-                                        .padding(
-                                            top = 12.dp,
-                                            bottom = 4.dp
-                                        )
-                                        .background(
-                                            color = Color.Transparent
-                                        )
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Absolute.Center
-                                ) {
-                                    SearchBar()
-                                }
-                            },
-                            scrollBehavior = scrollBehavior
-                        )
+                        SearchTopAppBar()
                     },
-
                     bottomBar = {
                         BottomNavBar(
                             selectedItem = selectedItem,
@@ -147,7 +121,6 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                         )
                     }
                 ) { paddingValues ->
-
                     Surface(
                         modifier = Modifier
                             .padding(paddingValues)
@@ -174,18 +147,14 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                                     container = container
                                 )
 
-                                BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(container)
-                                BottomNavBarItem.SettingsNavBarItem -> SettingsScreen(
-                                    navController = navController,
-                                    userRepository = container.userRepository,
-                                    onLogoutSucess = {
+                                BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(
+                                    container = container,
+                                    onLogoutSuccess = {
                                         navController.navigate(LoginRoute) {
                                             popUpTo(0) {
                                                 inclusive = true
                                             }
                                         }
-
-
                                     }
                                 )
                             }
@@ -200,6 +169,34 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchTopAppBar() {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    TopAppBar(
+        modifier = Modifier,
+        title = {},
+        actions = {
+            Row(
+                modifier = Modifier
+                    .padding(
+                        top = 12.dp,
+                        bottom = 4.dp
+                    )
+                    .background(
+                        color = Color.Transparent
+                    )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Absolute.Center
+            ) {
+                SearchBar()
+            }
+        },
+        scrollBehavior = scrollBehavior
+    )
 }
 
 @Composable
