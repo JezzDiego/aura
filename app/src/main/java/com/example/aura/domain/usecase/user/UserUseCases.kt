@@ -2,29 +2,33 @@ package com.example.aura.domain.usecase.user
 
 import com.example.aura.domain.model.User
 import com.example.aura.domain.repository.UserRepository
+import kotlinx.coroutines.flow.Flow
 
-class GetUserProfileUseCase(private val repository: UserRepository) {
-    suspend operator fun invoke(): User = repository.getUserProfile()
+class LoginUserUseCase(
+    private val userRepository: UserRepository
+) {
+    suspend operator fun invoke(email: String, password: String): User? = userRepository.loginUser(email, password)
+
 }
 
-class UpdateUserProfileUseCase(private val repository: UserRepository) {
-    suspend operator fun invoke(user: User): User {
-        require(user.name.isNotBlank()) { "O nome do usuário é obrigatório." }
-        return repository.updateUserProfile(user)
-    }
+class LogoutUserUseCase(
+    private val userRepository: UserRepository
+) {
+    suspend operator fun invoke(): Unit = userRepository.logout()
+
 }
 
-class DeleteAccountUseCase(private val repository: UserRepository) {
-    suspend operator fun invoke(userId: String) = repository.deleteAccount(userId)
+class GetUserListUseCase(private val repository: UserRepository) {
+    suspend operator fun invoke(): List<User> = repository.getAllUsers()
 }
 
-class CheckPremiumStatusUseCase(private val repository: UserRepository) {
-    suspend operator fun invoke(): Boolean = repository.isUserPremium()
+class GetLocalUserUseCase(private val repository: UserRepository) {
+    operator fun invoke(): Flow<User?> = repository.observeUser()
 }
 
 data class UserUseCases(
-    val getProfile: GetUserProfileUseCase,
-    val updateProfile: UpdateUserProfileUseCase,
-    val deleteAccount: DeleteAccountUseCase,
-    val checkPremiumStatus: CheckPremiumStatusUseCase
+    val loginUser: LoginUserUseCase,
+    val logoutUser: LogoutUserUseCase,
+    val getAllUsers: GetUserListUseCase,
+    val getLocalUser: GetLocalUserUseCase
 )

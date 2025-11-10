@@ -33,11 +33,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
-import com.example.aura.presentation.ui.feature_settings.SettingsScreen
+import com.example.aura.presentation.ui.feature_login.LoginScreen
 import kotlinx.coroutines.launch
+import com.example.aura.di.AppContainer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 
+@Serializable
+object LoginRoute
 
 @Serializable
 object HomeRoute
@@ -49,107 +54,149 @@ val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
     BottomNavBarItem.ExamNavBarItem,
     BottomNavBarItem.ProfileNavBarItem,
-    BottomNavBarItem.SettingsNavBarItem,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuraNavHost(navController: NavHostController, container: AppContainer) {
-    NavHost(navController = navController, startDestination = HomeRoute) {
-        composable<HomeRoute> {
-            var selectedItem by remember {
-                val item = bottomNavBarItems.first()
-                mutableStateOf(item)
-            }
 
-            val pageState = rememberPagerState {
-                bottomNavBarItems.size
-            }
+    var startDestination by remember { mutableStateOf<Any?>(null) }
 
-            LaunchedEffect(selectedItem) {
-                val currentIndex = bottomNavBarItems.indexOf(selectedItem)
-                pageState.animateScrollToPage(currentIndex)
-            }
+    LaunchedEffect(Unit) {
+        val user = withContext(Dispatchers.IO) {
+            container.userDao.getUser().firstOrNull()
+        }
 
-            LaunchedEffect(pageState.targetPage) {
-                selectedItem = bottomNavBarItems[pageState.targetPage]
-            }
+        startDestination = if (user != null) HomeRoute else LoginRoute
 
-            val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    }
 
+    startDestination?.let {
+        NavHost(navController = navController, startDestination = it) {
 
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        modifier = Modifier,
-                        title = {},
-                        actions = {
-                            Row (
-                                modifier = Modifier
-                                    .padding(
-                                        top = 12.dp,
-                                        bottom = 4.dp
-                                    )
-                                    .background(
-                                        color = Color.Transparent
-                                    )
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Absolute.Center
-                            ) {
-                                SearchBar()
+            composable<LoginRoute> {
+                LoginScreen(
+                    container = container,
+                    onLoginSuccess = {
+                        navController.navigate(HomeRoute) {
+                            popUpTo(LoginRoute) {
+                                inclusive = true
                             }
-                        },
-                        scrollBehavior = scrollBehavior
-                    )
-                },
-
-                bottomBar = {
-                    BottomNavBar(
-                        selectedItem = selectedItem,
-                        onItemChanged = { item ->
-                            selectedItem = item
                         }
-                    )
+
+
+                    }
+                )
+            }
+
+            composable<HomeRoute> {
+                var selectedItem by remember {
+                    val item = bottomNavBarItems.first()
+                    mutableStateOf(item)
                 }
-            ) { paddingValues ->
 
-                Surface(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                ) {
-                    HorizontalPager(pageState) { page ->
-                        val item = bottomNavBarItems[page]
-                        val coroutineScope = rememberCoroutineScope()
+                val pageState = rememberPagerState {
+                    bottomNavBarItems.size
+                }
 
-                        fun swipeNavigate(toItem: BottomNavBarItem) {
-                            val targetIndex = bottomNavBarItems.indexOf(toItem)
-                            coroutineScope.launch {
-                                pageState.animateScrollToPage(targetIndex)
+                LaunchedEffect(selectedItem) {
+                    val currentIndex = bottomNavBarItems.indexOf(selectedItem)
+                    pageState.animateScrollToPage(currentIndex)
+                }
+
+                LaunchedEffect(pageState.targetPage) {
+                    selectedItem = bottomNavBarItems[pageState.targetPage]
+                }
+
+                Scaffold(
+                    topBar = {
+                        SearchTopAppBar()
+                    },
+                    bottomBar = {
+                        BottomNavBar(
+                            selectedItem = selectedItem,
+                            onItemChanged = { item ->
+                                selectedItem = item
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    Surface(
+                        modifier = Modifier
+                            .padding(paddingValues)
+                    ) {
+                        HorizontalPager(pageState) { page ->
+                            val item = bottomNavBarItems[page]
+                            val coroutineScope = rememberCoroutineScope()
+
+                            fun swipeNavigate(toItem: BottomNavBarItem) {
+                                val targetIndex = bottomNavBarItems.indexOf(toItem)
+                                coroutineScope.launch {
+                                    pageState.animateScrollToPage(targetIndex)
+                                }
+
                             }
 
-                        }
+                            when (item) {
+                                BottomNavBarItem.HomeNavBarItem -> HomeScreen(
+                                    container = container,
+                                    swipeNavigate = { toItem -> swipeNavigate(toItem) }
+                                )
 
-                        when (item) {
-                            BottomNavBarItem.HomeNavBarItem -> HomeScreen(
-                                container = container,
-                                swipeNavigate = { toItem -> swipeNavigate(toItem) }
-                            )
-                            BottomNavBarItem.ExamNavBarItem -> ExamScreen(
-                                container = container
-                            )
-                            BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
-                            BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
+                                BottomNavBarItem.ExamNavBarItem -> ExamScreen(
+                                    container = container
+                                )
+
+                                BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(
+                                    container = container,
+                                    onLogoutSuccess = {
+                                        navController.navigate(LoginRoute) {
+                                            popUpTo(0) {
+                                                inclusive = true
+                                            }
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
-                }
 
+                }
+            }
+
+            composable<ExamRoute> {
+                ExamScreen(container = container)
             }
         }
-
-        composable<ExamRoute> {
-            ExamScreen(container = container)
-        }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchTopAppBar() {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    TopAppBar(
+        modifier = Modifier,
+        title = {},
+        actions = {
+            Row(
+                modifier = Modifier
+                    .padding(
+                        top = 12.dp,
+                        bottom = 4.dp
+                    )
+                    .background(
+                        color = Color.Transparent
+                    )
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Absolute.Center
+            ) {
+                SearchBar()
+            }
+        },
+        scrollBehavior = scrollBehavior
+    )
 }
 
 @Composable

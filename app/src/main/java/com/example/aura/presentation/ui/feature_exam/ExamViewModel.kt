@@ -10,7 +10,9 @@ import com.example.aura.core.ResultWrapper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class ExamViewModel(private val getExamList: GetExamListUseCase) : BaseViewModel() {
+class ExamViewModel(
+    private val examUseCases: ExamUseCases
+) : BaseViewModel() {
     private val _uiState = MutableStateFlow<ResultWrapper<List<Exam>>>(ResultWrapper.Loading)
     val uiState: StateFlow<ResultWrapper<List<Exam>>> = _uiState
 
@@ -27,7 +29,7 @@ class ExamViewModel(private val getExamList: GetExamListUseCase) : BaseViewModel
 
         executeSafeCall(
             block = {
-                getExamList()
+                examUseCases.getExamList()
             },
             onSuccess = {
                 _uiState.value = ResultWrapper.Success(it)
@@ -45,7 +47,7 @@ class ExamViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExamViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ExamViewModel(examUseCases.getExamList) as T
+            return ExamViewModel(examUseCases) as T
         }
         throw IllegalArgumentException("Unknown VM class")
     }

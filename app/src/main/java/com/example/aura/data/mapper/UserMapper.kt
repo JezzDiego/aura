@@ -1,5 +1,6 @@
 package com.example.aura.data.mapper
 
+import com.example.aura.data.local.entity.UserEntity
 import com.example.aura.data.remote.dto.UserDTO
 import com.example.aura.domain.model.SubscriptionPlan
 import com.example.aura.domain.model.User
@@ -9,8 +10,11 @@ fun UserDTO.toDomain(): User {
         id = id,
         name = name,
         email = email,
+        password = password,
         birthDate = birthDate,
         gender = gender,
+        healthInsurance = healthInsurance,
+        profileImageUrl = profileImageUrl,
         subscriptionPlan = plan.let { subscriptionPlan ->
             when (subscriptionPlan) {
                 SubscriptionPlan.FREE -> SubscriptionPlan.FREE
@@ -20,18 +24,28 @@ fun UserDTO.toDomain(): User {
     )
 }
 
-fun User.toDto(): UserDTO {
-    return UserDTO(
+fun UserEntity.toEntity(): UserEntity{
+    return UserEntity(
         id = id,
         name = name,
         email = email,
         birthDate = birthDate,
         gender = gender,
-        plan = subscriptionPlan.let { subscriptionPlan ->
-            when (subscriptionPlan) {
-                SubscriptionPlan.FREE -> SubscriptionPlan.FREE
-                SubscriptionPlan.PREMIUM -> SubscriptionPlan.PREMIUM
-            }
-        },
+        healthInsurance = healthInsurance,
+        profileImageUrl = profileImageUrl,
+    )
+}
+
+fun UserEntity.toDomain(): User {
+    return User(
+        id = this.id,
+        name = this.name,
+        email = this.email,
+        password = "",
+        birthDate = this.birthDate,
+        gender = this.gender,
+        healthInsurance = this.healthInsurance,
+        profileImageUrl = this.profileImageUrl,
+        subscriptionPlan = SubscriptionPlan.FREE
     )
 }

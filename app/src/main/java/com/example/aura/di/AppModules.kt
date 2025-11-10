@@ -1,11 +1,14 @@
 package com.example.aura.di
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
+import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.datasource.ExamLocalDataSource
 import com.example.aura.data.local.datasource.LaboratoryLocalDataSource
+import com.example.aura.data.local.datasource.UserLocalDataSource
 import com.example.aura.data.local.db.AuraDatabase
 import com.example.aura.data.local.preferences.AuraPreferences
 import com.example.aura.data.remote.api.ExamApi
@@ -29,7 +32,8 @@ import retrofit2.Retrofit
 /**
  * Manual DI container. Instantiate once (e.g., in Application) and access its singletons.
  */
-class AppContainer(context: Context) {
+class AppContainer(context: Context, app: Application) {
+    val application = app
 
     // Core singletons
     private val retrofit: Retrofit by lazy { RetrofitClient.instance }
@@ -44,6 +48,7 @@ class AppContainer(context: Context) {
     // DAOs
     private val examDao: ExamDao by lazy { database.examDao() }
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
+    val userDao: UserDao by lazy { database.userDao() }
 
     // APIs
     private val examApi: ExamApi by lazy { retrofit.create(ExamApi::class.java) }
@@ -51,16 +56,36 @@ class AppContainer(context: Context) {
     private val userApi: UserApi by lazy { retrofit.create(UserApi::class.java) }
 
     // Data sources
+
+    // local
     val examLocalDataSource: ExamLocalDataSource by lazy { ExamLocalDataSource(examDao) }
     val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
+    val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
+
+    // remote
     val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
     val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
     val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
 
-    // Repositories (currently depend directly on Api/Dao; ready for future refactor to use DS)
-    val examRepository: ExamRepository by lazy { ExamRepositoryImpl(api = examApi, dao = examDao) }
-    val laboratoryRepository: LaboratoryRepository by lazy { LaboratoryRepositoryImpl(api = laboratoryApi) }
-    val userRepository: UserRepository by lazy { UserRepositoryImpl(api = userApi) }
+    // Repositories
+    val examRepository: ExamRepository by lazy {
+        ExamRepositoryImpl(
+            localDS = examLocalDataSource,
+            remoteDS = examRemoteDataSource
+        )
+    }
+    val laboratoryRepository: LaboratoryRepository by lazy {
+        LaboratoryRepositoryImpl(
+            localDS = laboratoryLocalDataSource,
+            remoteDS = laboratoryRemoteDataSource
+        )
+    }
+    val userRepository: UserRepository by lazy {
+        UserRepositoryImpl(
+            localDS = userLocalDataSource,
+            remoteDS = userRemoteDataSource
+        )
+    }
 
     // Use cases
     val examUseCases: ExamUseCases by lazy {
@@ -83,10 +108,10 @@ class AppContainer(context: Context) {
 
     val userUseCases: UserUseCases by lazy {
         UserUseCases(
-            getProfile = GetUserProfileUseCase(userRepository),
-            updateProfile = UpdateUserProfileUseCase(userRepository),
-            deleteAccount = DeleteAccountUseCase(userRepository),
-            checkPremiumStatus = CheckPremiumStatusUseCase(userRepository)
+            loginUser = LoginUserUseCase(userRepository),
+            getAllUsers = GetUserListUseCase(userRepository),
+            getLocalUser = GetLocalUserUseCase(userRepository),
+            logoutUser = LogoutUserUseCase(userRepository)
         )
     }
 
