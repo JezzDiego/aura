@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.aura.presentation.ui.feature_exam.ExamScreen
 import com.example.aura.presentation.ui.feature_home.HomeScreen
-import com.example.aura.presentation.ui.feature_profile.ProfileScreen
 import kotlinx.serialization.Serializable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.example.aura.di.AppContainer
 import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
+import com.example.aura.presentation.ui.feature_settings.SettingsViewModel
 import kotlinx.coroutines.launch
 
 
@@ -48,7 +48,6 @@ object ExamRoute
 val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
     BottomNavBarItem.ExamNavBarItem,
-    BottomNavBarItem.ProfileNavBarItem,
     BottomNavBarItem.SettingsNavBarItem,
 )
 
@@ -137,8 +136,11 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                             BottomNavBarItem.ExamNavBarItem -> ExamScreen(
                                 container = container
                             )
-                            BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
-                            BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
+                            BottomNavBarItem.SettingsNavBarItem -> {
+                                // create SettingsViewModel using the ViewModel factory from the activity's Compose scope
+                                val vm = androidx.lifecycle.viewmodel.compose.viewModel<SettingsViewModel>()
+                                SettingsScreen(viewModel = vm)
+                            }
                         }
                     }
                 }

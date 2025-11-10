@@ -9,6 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.aura.presentation.navigation.AuraNavHost
 import com.example.aura.presentation.ui.theme.AuraTheme
 
@@ -19,7 +21,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AuraTheme {
+            // Observe dark mode preference and pass to AuraTheme so toggle affects the whole app
+            val isDark by container.preferences.isDarkMode.collectAsState(initial = false)
+            AuraTheme(darkTheme = isDark) {
                 Surface(
                     color = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onBackground,

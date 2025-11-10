@@ -71,7 +71,6 @@ fun HomeScreen(
             .fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        // Apply verticalScroll to the main column so the entire screen becomes scrollable
         Column(
             modifier = Modifier
                 .fillMaxSize()
