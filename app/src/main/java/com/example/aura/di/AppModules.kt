@@ -46,26 +46,44 @@ class AppContainer(context: Context) {
     // DAOs
     private val examDao: ExamDao by lazy { database.examDao() }
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
-
     val userDao: UserDao by lazy { database.userDao() }
 
-    val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
     // APIs
     private val examApi: ExamApi by lazy { retrofit.create(ExamApi::class.java) }
     private val laboratoryApi: LaboratoryApi by lazy { retrofit.create(LaboratoryApi::class.java) }
     private val userApi: UserApi by lazy { retrofit.create(UserApi::class.java) }
 
     // Data sources
+
+    // local
     val examLocalDataSource: ExamLocalDataSource by lazy { ExamLocalDataSource(examDao) }
     val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
+    val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
+
+    // remote
     val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
     val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
     val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
 
-    // Repositories (currently depend directly on Api/Dao; ready for future refactor to use DS)
-    val examRepository: ExamRepository by lazy { ExamRepositoryImpl(api = examApi, dao = examDao) }
-    val laboratoryRepository: LaboratoryRepository by lazy { LaboratoryRepositoryImpl(api = laboratoryApi) }
-    val userRepository: UserRepository by lazy { UserRepositoryImpl(api = userApi, localDataSource = userLocalDataSource) }
+    // Repositories
+    val examRepository: ExamRepository by lazy {
+        ExamRepositoryImpl(
+            localDS = examLocalDataSource,
+            remoteDS = examRemoteDataSource
+        )
+    }
+    val laboratoryRepository: LaboratoryRepository by lazy {
+        LaboratoryRepositoryImpl(
+            localDS = laboratoryLocalDataSource,
+            remoteDS = laboratoryRemoteDataSource
+        )
+    }
+    val userRepository: UserRepository by lazy {
+        UserRepositoryImpl(
+            localDS = userLocalDataSource,
+            remoteDS = userRemoteDataSource
+        )
+    }
 
     // Use cases
     val examUseCases: ExamUseCases by lazy {

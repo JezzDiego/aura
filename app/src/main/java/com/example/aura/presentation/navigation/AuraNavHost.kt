@@ -38,6 +38,7 @@ import com.example.aura.presentation.ui.feature_login.LoginScreen
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
 import kotlinx.coroutines.launch
 import com.example.aura.di.AppContainer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 
@@ -64,7 +65,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
     var startDestination by remember { mutableStateOf<Any?>(null) }
 
     LaunchedEffect(Unit) {
-        val user = withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val user = withContext(Dispatchers.IO) {
             container.userDao.getUser().firstOrNull()
         }
 
