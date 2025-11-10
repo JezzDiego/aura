@@ -2,6 +2,7 @@ package com.example.aura.data.local.datasource
 
 import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.entity.UserEntity
+import kotlinx.coroutines.flow.Flow
 
 class UserLocalDataSource (private val dao: UserDao) {
     suspend fun saveUser(user: UserEntity) = dao.insertUser(user)
@@ -10,5 +11,5 @@ class UserLocalDataSource (private val dao: UserDao) {
         dao.clearUser()
     }
 
-    suspend fun getUser() = dao.getUser()
+    fun getUser(): Flow<UserEntity?> = dao.getUser()
 }

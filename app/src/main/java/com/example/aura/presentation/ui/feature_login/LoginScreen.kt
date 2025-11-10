@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -39,28 +38,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aura.core.ResultWrapper
-import com.example.aura.domain.usecase.user.LoginUserUseCase
+import com.example.aura.di.AppContainer
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    loginUserUseCase: LoginUserUseCase,
-    onLoginSucces: () -> Unit,
+    container: AppContainer,
+    onLoginSuccess: () -> Unit,
 ){
-    val factory = remember { LoginViewModelFactory(loginUserUseCase)}
-    val viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
+    val factory = LoginViewModelFactory(container.userUseCases)
+    val viewModel: LoginViewModel = viewModel(factory = factory)
 
     val loginState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(loginState) {
         if (loginState is ResultWrapper.Success){
-            onLoginSucces()
+            onLoginSuccess()
         }
     }
 

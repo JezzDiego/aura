@@ -106,7 +106,9 @@ class AppContainer(context: Context) {
 
     val userUseCases: UserUseCases by lazy {
         UserUseCases(
-            loginUser = LoginUserUseCase(userRepository)
+            loginUser = LoginUserUseCase(userRepository),
+            getAllUsers = GetUserListUseCase(userRepository),
+            getLocalUser = GetLocalUserUseCase(userRepository)
         )
     }
 

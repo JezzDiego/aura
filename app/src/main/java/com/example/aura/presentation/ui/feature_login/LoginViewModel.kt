@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.aura.core.BaseViewModel
 import com.example.aura.core.ResultWrapper
 import com.example.aura.domain.model.User
-import com.example.aura.domain.usecase.user.LoginUserUseCase
+import com.example.aura.domain.usecase.user.UserUseCases
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class LoginViewModel (
-    private val loginUserUseCase: LoginUserUseCase
+    private val userUseCases: UserUseCases
 ): BaseViewModel() {
     private val _uiState = MutableStateFlow<ResultWrapper<User>>(ResultWrapper.Loading)
     val uiState: StateFlow<ResultWrapper<User>> = _uiState
@@ -20,7 +20,7 @@ class LoginViewModel (
 
         executeSafeCall(
             block = {
-                loginUserUseCase(email, password)
+                userUseCases.loginUser(email, password)
             },
             onSuccess = {
                 if (it != null){
@@ -35,13 +35,13 @@ class LoginViewModel (
 }
 
 class LoginViewModelFactory(
-    private val loginUserUseCase: LoginUserUseCase
+    private val userUseCases: UserUseCases
 ): ViewModelProvider.Factory {
     override fun <T: ViewModel> create (modelClass: Class<T>): T{
         if(modelClass.isAssignableFrom(LoginViewModel::class.java)){
             @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(loginUserUseCase) as T
+            return LoginViewModel(userUseCases) as T
         }
-        throw IllegalArgumentException("Unkown VM class")
+        throw IllegalArgumentException("Unknown VM class")
     }
 }

@@ -7,6 +7,8 @@ import com.example.aura.data.remote.datasource.UserRemoteDataSource
 import com.example.aura.domain.model.User
 import com.example.aura.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class UserRepositoryImpl(
@@ -39,6 +41,10 @@ class UserRepositoryImpl(
         }
     }
 
+    override suspend fun getAllUsers(): List<User> = withContext(Dispatchers.IO) {
+        remoteDS.getUsers().map { it.toDomain() }
+    }
+
     override suspend fun logout() {
         withContext(Dispatchers.IO) {
             localDS.clearUser()
@@ -46,6 +52,7 @@ class UserRepositoryImpl(
         }
     }
 
-
+    override fun observeUser(): Flow<User?> =
+        localDS.getUser().map { it?.toDomain() }
 
 }

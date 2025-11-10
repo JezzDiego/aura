@@ -35,3 +35,17 @@ fun UserEntity.toEntity(): UserEntity{
         profileImageUrl = profileImageUrl,
     )
 }
+
+fun UserEntity.toDomain(): User {
+    return User(
+        id = this.id,
+        name = this.name,
+        email = this.email,
+        password = "",
+        birthDate = this.birthDate,
+        gender = this.gender,
+        healthInsurance = this.healthInsurance,
+        profileImageUrl = this.profileImageUrl,
+        subscriptionPlan = SubscriptionPlan.FREE
+    )
+}
