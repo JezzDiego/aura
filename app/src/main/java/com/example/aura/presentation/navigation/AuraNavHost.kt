@@ -64,7 +64,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
 
     LaunchedEffect(Unit) {
         val user = withContext(Dispatchers.IO) {
-            container.userRemoteDataSource.getUsers().firstOrNull()
+            container.userUseCases.getLocalUser().firstOrNull()
         }
 
         startDestination = if (user != null) HomeRoute else LoginRoute

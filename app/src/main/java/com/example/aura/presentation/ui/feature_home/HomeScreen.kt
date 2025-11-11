@@ -92,7 +92,10 @@ fun HomeScreen(
                     is ResultWrapper.Success -> {
                         val user = (userState as ResultWrapper.Success).value
                         val split = user?.name?.split(" ")
-                        val name = "${split?.firstOrNull()} ${split?.lastOrNull()}"
+                        val name = split?.let { parts ->
+                            if (parts.size > 1) "${parts.first()} ${parts.last()}"
+                            else parts.firstOrNull() ?: ""
+                        }
 
 
                         Text(
