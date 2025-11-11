@@ -38,8 +38,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.aura.core.ResultWrapper
+import com.example.aura.data.local.db.Converters
 import com.example.aura.di.AppContainer
 import com.example.aura.domain.model.Category
+import com.example.aura.presentation.ui.components.ExamCard
+import com.example.aura.presentation.ui.components.ExamItem
 import com.example.aura.utils.formatDate
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterialApi::class)
@@ -136,9 +139,6 @@ fun ExamScreen(
                                     .fillMaxSize(),
                                 content = {
                                     items(exams) { exam ->
-                                        val tagText = Category.entries.getOrNull(exam.category.ordinal)?.displayName
-                                            ?: "Categoria desconhecida"
-
                                         ExamCard(
                                             exam = ExamItem(
                                                 title = exam.title,
@@ -147,7 +147,7 @@ fun ExamScreen(
                                                 date = formatDate(
                                                     exam.date
                                                 ),
-                                                tag = tagText
+                                                tag = exam.category.displayName
                                             )
                                         )
                                     }
@@ -192,85 +192,6 @@ fun ExamScreen(
                     backgroundColor = MaterialTheme.colorScheme.surface
                 )
             }
-        }
-    }
-}
-
-data class ExamItem(
-    val title: String,
-    val subtitle: String,
-    val date: String,
-    val tag: String
-)
-
-@Composable
-fun ExamCard(exam: ExamItem) {
-    val shape = MaterialTheme.shapes.medium
-
-    Card(
-        onClick = { /* open exam */ },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clip(shape),
-        shape = shape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = exam.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                TagPill(text = exam.tag)
-            }
-
-            Text(
-                text = exam.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                modifier = Modifier.padding(top = 10.dp)
-            )
-
-            Text(
-                text = "Date: ${exam.date}",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                modifier = Modifier.padding(top = 12.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun TagPill(text: String) {
-    Card(
-        shape = MaterialTheme.shapes.small,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }

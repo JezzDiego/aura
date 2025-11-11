@@ -44,9 +44,13 @@ fun HomeScreen(
     container: AppContainer,
     swipeNavigate: (BottomNavBarItem) -> Unit = {}
 ) {
-    val factory = HomeViewModelFactory(container.examUseCases)
+    val factory = HomeViewModelFactory(
+        container.examUseCases,
+        container.userUseCases
+    )
     val viewModel: HomeViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
+    val userState by viewModel.uiUserState.collectAsState()
 
     val actions = listOf(
         ActionItem(
@@ -71,19 +75,46 @@ fun HomeScreen(
             .fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        // Apply verticalScroll to the main column so the entire screen becomes scrollable
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    text = "Olá, Jessé",
-                    style = MaterialTheme.typography.headlineMediumEmphasized,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+                when (userState) {
+                    is ResultWrapper.Loading -> {
+                        LoadingIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 12.dp)
+                        )
+                    }
+
+                    is ResultWrapper.Success -> {
+                        val user = (userState as ResultWrapper.Success).value
+                        val split = user?.name?.split(" ")
+                        val name = split?.let { parts ->
+                            if (parts.size > 1) "${parts.first()} ${parts.last()}"
+                            else parts.firstOrNull() ?: ""
+                        }
+
+
+                        Text(
+                            text = "Olá, $name",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+
+                    else -> {
+                        Text(
+                            text = "Olá",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     actions.forEach { action ->

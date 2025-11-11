@@ -33,10 +33,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.aura.presentation.ui.components.SearchBar
 import com.example.aura.presentation.ui.feature_login.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.aura.di.AppContainer
+import com.example.aura.presentation.ui.components.FullScreenSearchBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
@@ -64,7 +64,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
 
     LaunchedEffect(Unit) {
         val user = withContext(Dispatchers.IO) {
-            container.userDao.getUser().firstOrNull()
+            container.userUseCases.getLocalUser().firstOrNull()
         }
 
         startDestination = if (user != null) HomeRoute else LoginRoute
@@ -110,7 +110,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
 
                 Scaffold(
                     topBar = {
-                        SearchTopAppBar()
+                        SearchTopAppBar(container)
                     },
                     bottomBar = {
                         BottomNavBar(
@@ -173,7 +173,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTopAppBar() {
+fun SearchTopAppBar(container: AppContainer) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     TopAppBar(
@@ -192,7 +192,7 @@ fun SearchTopAppBar() {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Absolute.Center
             ) {
-                SearchBar()
+                FullScreenSearchBar(container)
             }
         },
         scrollBehavior = scrollBehavior
