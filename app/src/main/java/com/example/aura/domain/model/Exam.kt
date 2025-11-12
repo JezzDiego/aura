@@ -6,7 +6,7 @@ data class Exam(
     val title: String,
     val category: Category,
     val date: Long,
-    val laboratory: Laboratory?,
+    var laboratory: Laboratory?,
     val results: List<ExamResult>,
     val attachments: List<FileAttachment> = emptyList(),
     val notes: String? = null,

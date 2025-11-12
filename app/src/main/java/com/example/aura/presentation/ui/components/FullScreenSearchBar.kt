@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -24,9 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import com.example.aura.di.AppContainer
-import com.example.aura.domain.model.Category
 import com.example.aura.domain.model.Exam
+import com.example.aura.domain.model.Laboratory
 import com.example.aura.utils.formatDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,10 +43,34 @@ fun FullScreenSearchBar(container: AppContainer) {
     val scope = rememberCoroutineScope()
 
     var exams by remember { mutableStateOf(emptyList<Exam>()) }
+    var filteredExams by remember { mutableStateOf(emptyList<Exam>()) }
 
-    LaunchedEffect(Unit) {
-        exams = withContext(Dispatchers.IO) {
-            container.examUseCases.getExamList()
+    LaunchedEffect(textFieldState.text) {
+        if (exams.isEmpty()) {
+            exams = withContext(Dispatchers.IO) {
+                container.examUseCases.getExamList()
+            }
+        } else {
+
+            val query = textFieldState.text.toString().lowercase().trim()
+
+            filteredExams = exams.map {
+                if (it.laboratory == null) {
+                    it.laboratory = Laboratory(
+                        name = "Laboratório Desconhecido",
+                        id = "",
+                        address = null,
+                        phone = null,
+                        email = null
+                    )
+                }
+                it
+            }.filter {
+                it.title.lowercase().contains(query) ||
+                        it.category.displayName.lowercase().contains(query) ||
+                        it.laboratory?.name?.lowercase()?.contains(query) == true ||
+                        it.notes?.lowercase()?.contains(query) == true
+            }
         }
     }
 
@@ -53,7 +80,13 @@ fun FullScreenSearchBar(container: AppContainer) {
                 modifier = Modifier.fillMaxWidth(),
                 searchBarState = searchBarState,
                 textFieldState = textFieldState,
-                onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done,
+                ),
+                onSearch = {
+//                    scope.launch { searchBarState.animateToCollapsed() }
+                },
                 placeholder = {
                     Text(
                         modifier = Modifier
@@ -108,24 +141,20 @@ fun FullScreenSearchBar(container: AppContainer) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            val query = textFieldState.text.toString().lowercase().trim()
-
-            val filteredExams = exams.filter {
-                it.title.lowercase().contains(query) ||
-                        it.category.displayName.lowercase().contains(query) ||
-                        it.laboratory?.name?.lowercase()?.contains(query) == true ||
-                        it.notes?.lowercase()?.contains(query) == true
-            }
-
-            if (filteredExams.isEmpty()) {
-                Text(text = "Nenhum exame encontrado.")
+            if (filteredExams.isEmpty() && textFieldState.text.isNotEmpty()) {
+                Text(
+                    text = "Nenhum exame encontrado."
+                )
+            } else if ( textFieldState.text.isEmpty() ) {
+                Text(
+                    text = "Digite algo para buscar entre seus exames."
+                )
             } else {
                 filteredExams.forEach { exam ->
                      ExamCard(
                             exam = ExamItem(
                                 title = exam.title,
-                                subtitle = exam.laboratory?.name
-                                    ?: "Laboratório desconhecido",
+                                subtitle = exam.laboratory!!.name,
                                 date = formatDate(exam.date),
                                 tag = exam.category.displayName
                             ),

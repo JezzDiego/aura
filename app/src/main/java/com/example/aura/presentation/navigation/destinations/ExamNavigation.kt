@@ -2,19 +2,20 @@ package com.example.aura.presentation.navigation.destinations
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.aura.di.AppContainer
-import com.example.aura.presentation.ui.feature_exam.ExamScreen
+import com.example.aura.presentation.ui.feature_exam.details.ExamDetailsScreen
 
-const val examRoute = "examRoute"
+const val examDetailsRoute = "examDetailsRoute"
 
 
-fun NavGraphBuilder.examScreen(navController: NavController, container: AppContainer) {
-    composable(examRoute) {
-        ExamScreen(container)
+fun NavGraphBuilder.examDetailsScreen(container: AppContainer, navController: NavHostController) {
+    composable(examDetailsRoute) {
+        ExamDetailsScreen(container)
     }
 }
 
-fun NavController.navigateToExamScreen() {
-    navigate(examRoute)
+fun NavController.navigateToExamDetailsScreen() {
+    navigate(examDetailsRoute)
 }

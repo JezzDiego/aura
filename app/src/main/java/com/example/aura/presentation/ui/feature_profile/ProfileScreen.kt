@@ -51,13 +51,15 @@ import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Switch
+import androidx.navigation.NavHostController
+import com.example.aura.presentation.navigation.destinations.navigateToLoginScreenWithPopUp
 import kotlin.Unit
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfileScreen(
     container: AppContainer,
-    onLogoutSuccess: () -> Unit = {},
+    navController: NavHostController
 ) {
     val factory = ProfileViewModelFactory(container.userUseCases, app = container.application)
     val viewModel: ProfileViewModel = viewModel(factory = factory)
@@ -269,7 +271,7 @@ fun ProfileScreen(
                         Button(
                             onClick = {
                                 viewModel.logout{
-                                    onLogoutSuccess()
+                                    navController.navigateToLoginScreenWithPopUp()
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),

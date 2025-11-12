@@ -2,6 +2,8 @@ package com.example.aura.presentation.ui.feature_login
 
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -38,19 +41,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.aura.core.ResultWrapper
 import com.example.aura.di.AppContainer
+import com.example.aura.presentation.navigation.destinations.navigateToMainPagerScreenWithPopUpToLoginScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
     container: AppContainer,
-    onLoginSuccess: () -> Unit,
+    navController: NavHostController
 ){
     val factory = LoginViewModelFactory(container.userUseCases)
     val viewModel: LoginViewModel = viewModel(factory = factory)
@@ -59,7 +64,7 @@ fun LoginScreen(
 
     LaunchedEffect(loginState) {
         if (loginState is ResultWrapper.Success){
-            onLoginSuccess()
+            navController.navigateToMainPagerScreenWithPopUpToLoginScreen()
         }
     }
 
@@ -74,7 +79,12 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
             modifier = Modifier
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .scrollable(
+                    orientation = Orientation.Vertical,
+                    state = rememberScrollState()
+                )
+            ,
         ) {
             Text(
                 text = "AURA",
@@ -82,8 +92,15 @@ fun LoginScreen(
                 fontSize = 40.sp,
                 fontWeight = FontWeight.ExtraBold
             )
+            Text(
+                modifier = Modifier
+                    .padding(start = 12.dp, end = 12.dp, top = 2.dp),
+                text = "Acompanhamento Unificado de Resultados e Análises",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(45.dp))
 
             Box(
                 modifier = Modifier
@@ -114,15 +131,16 @@ fun LoginScreen(
 
             Button(
                 onClick = {viewModel.login(email, password)},
-                modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(999.dp)
+                shape = RoundedCornerShape(999.dp),
+                enabled = !(email.isBlank() || password.isBlank())
             ) {
                 Text("Entrar", fontSize = 18.sp)
             }
 
-            when(val state = loginState){
+            when(loginState){
                 is ResultWrapper.Loading -> Text("")
                 is ResultWrapper.Success -> Text("Bem-vindo")
                 is ResultWrapper.Error -> Text("Erro")
