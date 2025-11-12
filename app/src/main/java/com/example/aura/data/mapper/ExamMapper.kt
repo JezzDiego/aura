@@ -12,7 +12,7 @@ fun ExamDto.toDomain(): Exam {
         id = id,
         title = title,
         category = Category.valueOf(category.uppercase()),
-        date = date.toLong(),              // exemplo: converter "1706658000000" para epoch
+        date = date.toLong(),
         laboratory = laboratory?.let {
             Laboratory(
                 id = it.id,
@@ -41,12 +41,13 @@ fun ExamResultDto.toDomain(): ExamResult {
 fun Exam.toEntity(): ExamEntity {
     return ExamEntity(
         id = id,
+        userId = userId,
         title = title,
         category = category.name,
         date = date,
         labId = laboratory?.id,
-        notes = notes,
-        userId = userId
+        labName = laboratory?.name,
+        notes = notes
     )
 }
 
@@ -95,7 +96,7 @@ fun ExamEntity.toDomain(): Exam {
         title = title,
         category = Category.valueOf(category.uppercase()),
         date = date,
-        laboratory = labId?.let { Laboratory(it, it, null, null, null) },
+        laboratory = labName?.let { Laboratory(labId ?: it, it, null, null, null) } ?: labId?.let { Laboratory(it, it, null, null, null) },
         results = emptyList(),
         attachments = emptyList(),
         userId = userId,

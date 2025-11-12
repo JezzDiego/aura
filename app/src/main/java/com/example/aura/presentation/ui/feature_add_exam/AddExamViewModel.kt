@@ -39,8 +39,8 @@ class AddExamViewModel(
             try {
                 val fetched = container.laboratoryUseCases.getLaboratories()
                 _labs.value = fetched
-            } catch (t: Throwable) {
-                // falha silenciosa por enquanto
+            } catch (_: Throwable) {
+                // falha silenciosa
             }
         }
     }
@@ -64,7 +64,7 @@ class AddExamViewModel(
             executeSafeCall(
                 block = {
                     val exam = Exam(
-                        id = "", // O ID será gerado pelo backend/DB
+                        id = "",
                         userId = user.id,
                         title = title,
                         category = category,

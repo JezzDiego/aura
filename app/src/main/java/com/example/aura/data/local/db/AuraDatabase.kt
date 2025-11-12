@@ -10,7 +10,7 @@ import com.example.aura.data.local.entity.*
 
 @Database(
     entities = [ExamEntity::class, ExamResultEntity::class, LaboratoryEntity::class, FileAttachmentEntity::class, UserEntity::class],
-    version = 3,
+    version = 4,
 )
 @TypeConverters(Converters::class)
 abstract class AuraDatabase : RoomDatabase() {

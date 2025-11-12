@@ -98,7 +98,7 @@ fun AddExamScreen(container: AppContainer, navController: NavHostController) {
                 cursor.moveToFirst()
                 attachedFileName = cursor.getString(nameIndex)
                 val size = cursor.getLong(sizeIndex)
-                attachedFileSize = "${String.format("%.1f", size / (1024.0 * 1024.0))} MB"
+                attachedFileSize = "${String.format(Locale.getDefault(), "%.1f", size / (1024.0 * 1024.0))} MB"
             }
         }
     }
@@ -161,7 +161,7 @@ fun AddExamScreen(container: AppContainer, navController: NavHostController) {
                 ExposedDropdownMenuBox(
                     expanded = categoryMenuExpanded,
                     onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded },
-                    modifier = Modifier.weight(1.1f)
+                    modifier = Modifier.weight(1.2f)
                 ) {
                     OutlinedTextField(
                         value = selectedCategory?.displayName ?: "",

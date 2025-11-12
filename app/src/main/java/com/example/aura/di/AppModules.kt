@@ -3,6 +3,8 @@ package com.example.aura.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
 import com.example.aura.data.local.dao.UserDao
@@ -38,10 +40,17 @@ class AppContainer(context: Context, app: Application) {
     // Core singletons
     private val retrofit: Retrofit by lazy { RetrofitClient.instance }
 
+    // Migration para adicionar coluna labName se não existir
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE exams ADD COLUMN labName TEXT")
+        }
+    }
+
     private val database: AuraDatabase by lazy {
         Room.databaseBuilder(context.applicationContext, AuraDatabase::class.java, "aura.db")
-            // .addMigrations(MIGRATION_1_2, ...)
-            .fallbackToDestructiveMigration(true)
+            .addMigrations(MIGRATION_3_4)
+            .fallbackToDestructiveMigration() // keep fallback in case other migrations missing
             .build()
     }
 
@@ -68,18 +77,21 @@ class AppContainer(context: Context, app: Application) {
     val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
 
     // Repositories
-    val examRepository: ExamRepository by lazy {
-        ExamRepositoryImpl(
-            localDS = examLocalDataSource,
-            remoteDS = examRemoteDataSource
-        )
-    }
     val laboratoryRepository: LaboratoryRepository by lazy {
         LaboratoryRepositoryImpl(
             localDS = laboratoryLocalDataSource,
             remoteDS = laboratoryRemoteDataSource
         )
     }
+
+    val examRepository: ExamRepository by lazy {
+        ExamRepositoryImpl(
+            localDS = examLocalDataSource,
+            remoteDS = examRemoteDataSource,
+            laboratoryRepository = laboratoryRepository
+        )
+    }
+
     val userRepository: UserRepository by lazy {
         UserRepositoryImpl(
             localDS = userLocalDataSource,

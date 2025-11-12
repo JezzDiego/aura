@@ -13,6 +13,7 @@ data class ExamEntity(
     val category: String,
     val date: Long,
     val labId: String?,
+    val labName: String?,
     val notes: String?
 )
 
