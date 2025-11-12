@@ -13,5 +13,5 @@ enum class Category(val displayName: String) {
     MICROBIOLOGIA("Microbiologia"),
     ENDOCRINOLOGIA("Endocrinologia"),
     IMUNOLOGIA("Imunologia"),
-    IMAGEM("Imagem"),
+//    IMAGEM("Imagem"),
 }

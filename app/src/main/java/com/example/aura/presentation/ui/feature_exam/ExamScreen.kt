@@ -1,6 +1,5 @@
 package com.example.aura.presentation.ui.feature_exam
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,20 +28,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.aura.core.ResultWrapper
-import com.example.aura.data.local.db.Converters
 import com.example.aura.di.AppContainer
-import com.example.aura.domain.model.Category
+import com.example.aura.presentation.navigation.destinations.navigateToAddExamScreen
 import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
 import com.example.aura.presentation.ui.components.ExamCard
 import com.example.aura.presentation.ui.components.ExamItem
@@ -57,6 +58,20 @@ fun ExamScreen(
     val factory = ExamViewModelFactory(container.examUseCases)
     val viewModel: ExamViewModel = viewModel(factory = factory)
     val uiState by viewModel.uiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val rememberedLifecycle = remember { lifecycleOwner.lifecycle }
+    DisposableEffect(rememberedLifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        rememberedLifecycle.addObserver(observer)
+        onDispose {
+            rememberedLifecycle.removeObserver(observer)
+        }
+    }
 
     val pullRefreshState = rememberPullRefreshState(
         refreshing = false,
@@ -85,7 +100,9 @@ fun ExamScreen(
                 )
 
                 Card(
-                    onClick = { /* TODO */ },
+                    onClick = {
+                        navController.navigateToAddExamScreen()
+                    },
                     shape = MaterialTheme.shapes.small,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant

@@ -3,6 +3,7 @@ package com.example.aura.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.example.aura.data.local.dao.ArticleDao
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
 import com.example.aura.data.local.dao.UserDao
@@ -11,6 +12,7 @@ import com.example.aura.data.local.datasource.LaboratoryLocalDataSource
 import com.example.aura.data.local.datasource.UserLocalDataSource
 import com.example.aura.data.local.db.AuraDatabase
 import com.example.aura.data.local.preferences.AuraPreferences
+import com.example.aura.data.remote.api.ArticlesApi
 import com.example.aura.data.remote.api.ExamApi
 import com.example.aura.data.remote.api.LaboratoryApi
 import com.example.aura.data.remote.api.UserApi
@@ -18,16 +20,25 @@ import com.example.aura.data.remote.datasource.ExamRemoteDataSource
 import com.example.aura.data.remote.datasource.LaboratoryRemoteDataSource
 import com.example.aura.data.remote.datasource.UserRemoteDataSource
 import com.example.aura.data.remote.network.RetrofitClient
+import com.example.aura.data.repository.ArticleRepositoryImpl
 import com.example.aura.data.repository.ExamRepositoryImpl
 import com.example.aura.data.repository.LaboratoryRepositoryImpl
 import com.example.aura.data.repository.UserRepositoryImpl
+import com.example.aura.domain.repository.ArticleRepository
 import com.example.aura.domain.repository.ExamRepository
 import com.example.aura.domain.repository.LaboratoryRepository
 import com.example.aura.domain.repository.UserRepository
+import com.example.aura.domain.usecase.article.ArticleUseCases
+import com.example.aura.domain.usecase.article.GetArticleByIdUseCase
+import com.example.aura.domain.usecase.article.GetArticleListUseCaseAPI
+import com.example.aura.domain.usecase.article.GetArticleListUseCaseDAO
+import com.example.aura.domain.usecase.article.IsArticleSavedUseCase
+import com.example.aura.domain.usecase.article.ToggleArticleSavedStatusUseCase
 import com.example.aura.domain.usecase.exam.*
 import com.example.aura.domain.usecase.laboratory.*
 import com.example.aura.domain.usecase.user.*
 import retrofit2.Retrofit
+import kotlin.getValue
 
 /**
  * Manual DI container. Instantiate once (e.g., in Application) and access its singletons.
@@ -37,6 +48,7 @@ class AppContainer(context: Context, app: Application) {
 
     // Core singletons
     private val retrofit: Retrofit by lazy { RetrofitClient.instance }
+    private val retrofit2: Retrofit by lazy { RetrofitClient.instance2 }
 
     private val database: AuraDatabase by lazy {
         Room.databaseBuilder(context.applicationContext, AuraDatabase::class.java, "aura.db")
@@ -49,11 +61,13 @@ class AppContainer(context: Context, app: Application) {
     private val examDao: ExamDao by lazy { database.examDao() }
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
     val userDao: UserDao by lazy { database.userDao() }
+    private val articleDao: ArticleDao by lazy {database.articleDao()}
 
     // APIs
     private val examApi: ExamApi by lazy { retrofit.create(ExamApi::class.java) }
     private val laboratoryApi: LaboratoryApi by lazy { retrofit.create(LaboratoryApi::class.java) }
     private val userApi: UserApi by lazy { retrofit.create(UserApi::class.java) }
+    private val articleApi: ArticlesApi by lazy {retrofit2.create(ArticlesApi::class.java)}
 
     // Data sources
 
@@ -86,6 +100,12 @@ class AppContainer(context: Context, app: Application) {
             remoteDS = userRemoteDataSource
         )
     }
+    val articleRepository: ArticleRepository by lazy {
+        ArticleRepositoryImpl(
+            api = articleApi,
+            dao = articleDao
+        )
+    }
 
     // Use cases
     val examUseCases: ExamUseCases by lazy {
@@ -112,6 +132,16 @@ class AppContainer(context: Context, app: Application) {
             getAllUsers = GetUserListUseCase(userRepository),
             getLocalUser = GetLocalUserUseCase(userRepository),
             logoutUser = LogoutUserUseCase(userRepository)
+        )
+    }
+
+    val articleUserCases: ArticleUseCases by lazy{
+        ArticleUseCases(
+            getArticleListAPI = GetArticleListUseCaseAPI(articleRepository),
+            getArticlesDAO = GetArticleListUseCaseDAO(articleRepository),
+            getArticleById = GetArticleByIdUseCase(articleRepository),
+            toggleArticleSavedStatus = ToggleArticleSavedStatusUseCase(articleRepository),
+            isArticleSaved = IsArticleSavedUseCase(articleRepository)
         )
     }
 

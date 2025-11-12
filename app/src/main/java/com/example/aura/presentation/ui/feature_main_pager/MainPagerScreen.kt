@@ -36,12 +36,14 @@ import com.example.aura.presentation.navigation.BottomNavBarItem
 import com.example.aura.presentation.ui.components.FullScreenSearchBar
 import com.example.aura.presentation.ui.feature_exam.ExamScreen
 import com.example.aura.presentation.ui.feature_home.HomeScreen
+import com.example.aura.presentation.ui.feature_news.NewsScreen
 import com.example.aura.presentation.ui.feature_profile.ProfileScreen
 import kotlinx.coroutines.launch
 
 val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
     BottomNavBarItem.ExamNavBarItem,
+    BottomNavBarItem.NewsNavBarItem,
     BottomNavBarItem.ProfileNavBarItem,
 )
 
@@ -98,6 +100,11 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
                     BottomNavBarItem.HomeNavBarItem -> HomeScreen(
                         container = container,
                         swipeNavigate = { toItem -> swipeNavigate(toItem) },
+                        navController = navController
+                    )
+
+                    BottomNavBarItem.NewsNavBarItem -> NewsScreen(
+                        container = container,
                         navController = navController
                     )
 

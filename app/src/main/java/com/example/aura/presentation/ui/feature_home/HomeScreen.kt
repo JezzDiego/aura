@@ -34,7 +34,7 @@ import androidx.navigation.NavHostController
 import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
-import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
+import com.example.aura.presentation.navigation.destinations.navigateToAddExamScreen
 import com.example.aura.utils.formatDate
 
 data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String, val navigate: () -> Unit = {})
@@ -64,6 +64,9 @@ fun HomeScreen(
             Icons.Default.Description,
             title = "Adicionar Novo",
             subtitle = "Faça upload de um novo resultado",
+            navigate = {
+                navController.navigateToAddExamScreen()
+            }
         ),
         ActionItem(
             Icons.AutoMirrored.Filled.ShowChart,

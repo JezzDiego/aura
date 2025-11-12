@@ -7,11 +7,22 @@ import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import com.example.aura.di.AppContainer
+import com.example.aura.presentation.ui.feature_exam.add_exam.AddExamScreen
 import com.example.aura.presentation.ui.feature_exam.details.ExamDetailsScreen
 
-const val examDetailsRoute = "examDetailsRoute/{examId}"
+const val addExamRoute = "addExamRoute"
 const val examDetailsBase = "examDetailsRoute"
+const val examDetailsRoute = "examDetailsRoute/{examId}"
 
+fun NavGraphBuilder.addExamScreen(container: AppContainer, navController: NavHostController) {
+    composable(addExamRoute) {
+        AddExamScreen(container, navController)
+    }
+}
+
+fun NavController.navigateToAddExamScreen() {
+    navigate(addExamRoute)
+}
 
 fun NavGraphBuilder.examDetailsScreen(container: AppContainer, navController: NavHostController) {
     composable(
