@@ -5,13 +5,15 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MedicationDTO(
-    @SerialName("id_api")
-    val apiId: String,
+    val id: String,
 
-    @SerialName("nome_medicamento")
     val name: String,
 
-    @SerialName("dosagem_forca")
-    val strength: String
+    val dosage: String,
+
+    @SerialName("interval_hours")
+    val intervalHours: Int,
+
+    val description: String
 )
 

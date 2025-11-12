@@ -1,17 +1,18 @@
 package com.example.aura.presentation.ui.feature_medication
 
-import MedicationViewModel
-import MedicationViewModelFactory
+import com.example.aura.presentation.ui.feature_medication.MedicationViewModel
+import com.example.aura.presentation.ui.feature_medication.MedicationViewModelFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.aura.di.AppContainer
+import com.example.aura.domain.model.Medication
 import com.example.aura.domain.model.MedicationSchedule
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,23 +38,32 @@ fun MedicationScreen(
     val viewModel: MedicationViewModel = viewModel(factory = factory)
 
     val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            snackbarHostState.showSnackbar(
+                message = uiState.error ?: "Ocorreu um erro",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.clearError()
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopBar(onBack = { navController.popBackStack() })
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+                .padding(horizontal = 20.dp)
         ) {
-            TopBar(onBack = { navController.popBackStack() })
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            HealthTipCard()
-
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
@@ -63,17 +74,19 @@ fun MedicationScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // passa valores primitivos para o formulário
             AddMedicationForm(
                 name = uiState.name,
                 dose = uiState.doseDetails,
                 interval = uiState.interval,
                 startTime = uiState.startTime,
+                searchResults = uiState.searchResults,
+                isSearching = uiState.isSearching,
                 onNameChange = viewModel::onNameChange,
                 onDoseChange = viewModel::onDoseChange,
                 onIntervalChange = viewModel::onIntervalChange,
                 onStartTimeChange = viewModel::onStartTimeChange,
-                onAddClick = viewModel::onAddMedication
+                onAddClick = viewModel::onAddMedication,
+                onSuggestionSelected = viewModel::onSuggestionSelected
             )
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -106,6 +119,7 @@ fun MedicationScreen(
                         uiState.savedMedications.forEach { schedule ->
                             MedicationCard(
                                 schedule = schedule,
+                                onClick = { viewModel.onShowDetails(schedule) },
                                 onDelete = { viewModel.onDeleteMedication(schedule) }
                             )
                         }
@@ -116,57 +130,40 @@ fun MedicationScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
-}
 
-@Composable
-private fun TopBar(onBack: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
-    ) {
-        IconButton(onClick = onBack) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-                contentDescription = "Voltar",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
-        }
-        Text(
-            text = "Medicações",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+    if (uiState.medicationForDetails != null) {
+        DescriptionDialog(
+            medication = uiState.medicationForDetails!!,
+            onDismiss = viewModel::onDismissDetails
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HealthTipCard() {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+private fun TopBar(onBack: () -> Unit) {
+    TopAppBar(
+        title = {
             Text(
-                text = "Lembre-se de verificar a validade dos seus medicamentos.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                text = "Medicações",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
-        }
-    }
+        },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBackIos,
+                    contentDescription = "Voltar",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    )
 }
 
 @Composable
@@ -175,11 +172,14 @@ private fun AddMedicationForm(
     dose: String,
     interval: String,
     startTime: String,
+    searchResults: List<Medication>,
+    isSearching: Boolean,
     onNameChange: (String) -> Unit,
     onDoseChange: (String) -> Unit,
     onIntervalChange: (String) -> Unit,
     onStartTimeChange: (String) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onSuggestionSelected: (Medication) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         OutlinedTextField(
@@ -188,8 +188,29 @@ private fun AddMedicationForm(
             label = { Text("Nome do Medicamento") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            singleLine = true
+            singleLine = true,
+            trailingIcon = {
+                if (isSearching) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                }
+            }
         )
+
+        if (searchResults.isNotEmpty()) {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(searchResults.take(3)) { medication ->
+                    SuggestionChip(
+                        text = medication.name,
+                        onClick = { onSuggestionSelected(medication) }
+                    )
+                }
+            }
+        }
 
         OutlinedTextField(
             value = dose,
@@ -235,8 +256,13 @@ private fun AddMedicationForm(
 }
 
 @Composable
-private fun MedicationCard(schedule: MedicationSchedule, onDelete: () -> Unit) {
+private fun MedicationCard(
+    schedule: MedicationSchedule,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier.fillMaxWidth()
@@ -284,4 +310,50 @@ private fun MedicationCard(schedule: MedicationSchedule, onDelete: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun SuggestionChip(text: String, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+        )
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
+}
+
+@Composable
+private fun DescriptionDialog(
+    medication: Medication,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = medication.name,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(text = medication.description)
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Fechar")
+            }
+        },
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }

@@ -6,6 +6,11 @@ import retrofit2.http.Query
 
 interface MedicationApi {
 
-    @GET("api/v1/search")
-    suspend fun searchMedications(@Query("q") query: String): List<MedicationDTO>
+    @GET("Medication")
+    suspend fun getAllMedications(): List<MedicationDTO>
+
+    @GET("Medication")
+    suspend fun searchMedications(
+        @Query("name") name: String
+    ): List<MedicationDTO>
 }

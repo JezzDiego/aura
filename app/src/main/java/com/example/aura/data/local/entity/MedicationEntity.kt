@@ -10,5 +10,6 @@ data class MedicationEntity(
     val name: String,
     val doseDetails: String,
     val intervalInHours: Int,
-    val startTime: String
+    val startTime: String,
+    val description: String
 )

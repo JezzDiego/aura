@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 class MedicationLocalDataSource(
     private val medicationDao: MedicationDao
 ) {
-
     fun getAllMedications(): Flow<List<MedicationEntity>> {
         return medicationDao.getSavedMedications()
     }
@@ -17,6 +16,6 @@ class MedicationLocalDataSource(
     }
 
     suspend fun delete(medication: MedicationEntity) {
-        medicationDao.deleteMedication( medication)
+        medicationDao.deleteMedication(medication)
     }
 }

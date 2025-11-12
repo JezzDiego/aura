@@ -1,19 +1,22 @@
+package com.example.aura.presentation.ui.feature_medication
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.aura.core.BaseViewModel
+import com.example.aura.core.ResultWrapper
 import com.example.aura.domain.model.Medication
 import com.example.aura.domain.model.MedicationSchedule
 import com.example.aura.domain.usecase.medication.MedicationUseCases
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-
 data class MedicationUiState(
-
     val savedMedications: List<MedicationSchedule> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
@@ -21,7 +24,13 @@ data class MedicationUiState(
     val name: String = "",
     val doseDetails: String = "",
     val interval: String = "",
-    val startTime: String = ""
+    val startTime: String = "",
+    val description: String = "",
+
+    val searchResults: List<Medication> = emptyList(),
+    val isSearching: Boolean = false,
+
+    val medicationForDetails: Medication? = null
 )
 
 class MedicationViewModel(
@@ -30,6 +39,8 @@ class MedicationViewModel(
 
     private val _uiState = MutableStateFlow(MedicationUiState())
     val uiState: StateFlow<MedicationUiState> = _uiState.asStateFlow()
+
+    private var searchJob: Job? = null
 
     init {
         getSavedMedications()
@@ -46,6 +57,48 @@ class MedicationViewModel(
 
     fun onNameChange(name: String) {
         _uiState.update { it.copy(name = name) }
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(300L)
+            searchMedications(name)
+        }
+    }
+
+    private fun searchMedications(query: String) {
+        if (query.length < 3) {
+            _uiState.update { it.copy(searchResults = emptyList(), isSearching = false) }
+            return
+        }
+        _uiState.update { it.copy(isSearching = true) }
+        viewModelScope.launch {
+            when (val result = useCases.searchMedications(query)) {
+                is ResultWrapper.Success -> {
+                    _uiState.update { it.copy(searchResults = result.value, isSearching = false, error = null) }
+                }
+                is ResultWrapper.Error -> {
+                    _uiState.update { it.copy(
+                        isSearching = false,
+                        error = "Falha ao buscar sugestões: ${result.throwable.localizedMessage}"
+                    ) }
+                }
+                is ResultWrapper.Loading -> {
+                    _uiState.update { it.copy(isSearching = true) }
+                }
+            }
+        }
+    }
+
+    fun onSuggestionSelected(medication: Medication) {
+        _uiState.update {
+            it.copy(
+                name = medication.name,
+                doseDetails = medication.doseDetails,
+                interval = medication.intervalInHours.toString(),
+                description = medication.description,
+                searchResults = emptyList(),
+                error = null
+            )
+        }
     }
 
     fun onDoseChange(dose: String) {
@@ -72,22 +125,15 @@ class MedicationViewModel(
             name = state.name,
             doseDetails = state.doseDetails,
             intervalInHours = state.interval.toIntOrNull() ?: 8,
-            startTime = state.startTime
+            startTime = state.startTime,
+            description = state.description
         )
 
         executeSafeCall(
-            block = {
-                useCases.addMedication(medication)
-            },
+            block = { useCases.addMedication(medication) },
             onSuccess = {
                 _uiState.update {
-                    it.copy(
-                        name = "",
-                        doseDetails = "",
-                        interval = "",
-                        startTime = "",
-                        error = null
-                    )
+                    it.copy(name = "", doseDetails = "", interval = "", startTime = "", description = "", error = null)
                 }
             },
             onError = { throwable ->
@@ -98,16 +144,20 @@ class MedicationViewModel(
 
     fun onDeleteMedication(schedule: MedicationSchedule) {
         executeSafeCall(
-            block = {
-                useCases.deleteMedication(schedule.medication)
-            },
-            onSuccess = {
-                // A lista reativa (Flow) cuidará de atualizar a UI automaticamente
-            },
+            block = { useCases.deleteMedication(schedule.medication) },
+            onSuccess = {},
             onError = { throwable ->
                 _uiState.update { it.copy(error = throwable.localizedMessage ?: "Erro ao deletar") }
             }
         )
+    }
+
+    fun onShowDetails(schedule: MedicationSchedule) {
+        _uiState.update { it.copy(medicationForDetails = schedule.medication) }
+    }
+
+    fun onDismissDetails() {
+        _uiState.update { it.copy(medicationForDetails = null) }
     }
 
     fun clearError() {
