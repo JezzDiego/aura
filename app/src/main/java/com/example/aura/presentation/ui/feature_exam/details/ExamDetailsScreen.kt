@@ -23,6 +23,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,7 +46,7 @@ import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.utils.formatDate
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExamDetailsScreen(
     container: AppContainer,
@@ -103,11 +105,7 @@ fun ExamDetailsScreen(
         ) { innerPadding ->
             when (uiState) {
                 is ResultWrapper.Loading -> {
-                    Column(modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Carregando...", color = MaterialTheme.colorScheme.onBackground)
-                    }
+                    LoadingIndicator()
                 }
 
                 is ResultWrapper.Error -> {
@@ -121,7 +119,7 @@ fun ExamDetailsScreen(
 
                 is ResultWrapper.Success -> {
                     val exam = (uiState as ResultWrapper.Success).value
-
+                    Log.i("ExamDetailsScreen", "Loaded exam id=${exam?.id}")
                     Column(
                         modifier = Modifier
                             .padding(innerPadding)
@@ -143,9 +141,7 @@ fun ExamDetailsScreen(
                                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), thickness = 1.dp)
                                 InfoRow(label = "Data", value = exam?.date?.let { formatDate(it) } ?: "-")
                                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), thickness = 1.dp)
-                                InfoRow(label = "Médico Solicitante", value = exam?.notes ?: "-")
-                                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), thickness = 1.dp)
-                                InfoRow(label = "Laboratório", value = exam?.laboratory?.name ?: "-")
+                                InfoRow(label = "Laboratório", value = exam?.laboratory?.name ?: "Lab. Desconhecido")
                             }
                         }
 
@@ -167,41 +163,18 @@ fun ExamDetailsScreen(
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                // If exam.results exists, map to items; else show placeholders
-                                Log.i("ExamDetailsScreen", "Exam results: ${exam}")
                                 val results = exam?.results ?: emptyList()
                                 if (results.isEmpty()) {
                                     Text(text = "Sem resultados", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
                                 } else {
-                                    // show up to 3 results similar to previous UI
-                                    val r1 = results.getOrNull(0)
-                                    val r2 = results.getOrNull(1)
-                                    val r3 = results.getOrNull(2)
 
-                                    ResultItem(
-                                        title = r1?.fieldName ?: "-",
-                                        value = r1?.resultValue ?: "-",
-                                        range = r1?.referenceRange ?: "-",
-                                        status = ResultStatus.OK
-                                    )
-
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), thickness = 1.dp)
-
-                                    ResultItem(
-                                        title = r2?.fieldName ?: "-",
-                                        value = r2?.resultValue ?: "-",
-                                        range = r2?.referenceRange ?: "-",
-                                        status = ResultStatus.WARNING
-                                    )
-
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), thickness = 1.dp)
-
-                                    ResultItem(
-                                        title = r3?.fieldName ?: "-",
-                                        value = r3?.resultValue ?: "-",
-                                        range = r3?.referenceRange ?: "-",
-                                        status = ResultStatus.ERROR
-                                    )
+                                    results.map {
+                                        ResultItem(
+                                            title = it.fieldName,
+                                            value = it.resultValue,
+                                            range = it.referenceRange ?: "-",
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -277,7 +250,7 @@ private fun InfoRow(label: String, value: String) {
 private enum class ResultStatus { OK, WARNING, ERROR }
 
 @Composable
-private fun ResultItem(title: String, value: String, range: String, status: ResultStatus) {
+private fun ResultItem(title: String, value: String, range: String, status: ResultStatus = ResultStatus.OK) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,7 +272,7 @@ private fun ResultItem(title: String, value: String, range: String, status: Resu
             )
         }
 
-        Column(horizontalAlignment = Alignment.End) {
+        Column(modifier = Modifier.padding(start = 4.dp), horizontalAlignment = Alignment.End) {
             val (iconColor, icon) = when (status) {
                 ResultStatus.OK -> Pair(MaterialTheme.colorScheme.primary, Icons.Default.CheckCircle)
                 ResultStatus.WARNING -> Pair(MaterialTheme.colorScheme.tertiary, Icons.Default.Warning)

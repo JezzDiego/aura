@@ -16,12 +16,18 @@ data class ExamEntity(
     val notes: String?
 )
 
-// Relacionamento 1:N com resultados
-data class ExamWithResults(
+// Relacionamento completo: exam + results + attachments
+// Usado pelo DAO para retornar o exame com todos os detalhes
+data class ExamWithDetails(
     @Embedded val exam: ExamEntity,
     @Relation(
         parentColumn = "id",
         entityColumn = "examId"
     )
-    val results: List<ExamResultEntity>
+    val results: List<ExamResultEntity> = emptyList(),
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "examId"
+    )
+    val attachments: List<FileAttachmentEntity> = emptyList()
 )

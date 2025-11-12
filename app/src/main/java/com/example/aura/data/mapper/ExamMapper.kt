@@ -1,6 +1,9 @@
 package com.example.aura.data.mapper
 
 import com.example.aura.data.local.entity.ExamEntity
+import com.example.aura.data.local.entity.ExamWithDetails
+import com.example.aura.data.local.entity.ExamResultEntity
+import com.example.aura.data.local.entity.FileAttachmentEntity
 import com.example.aura.data.remote.dto.ExamDto
 import com.example.aura.data.remote.dto.ExamResultDto
 import com.example.aura.data.remote.dto.FileAttachmentDTO
@@ -12,7 +15,7 @@ fun ExamDto.toDomain(): Exam {
         id = id,
         title = title,
         category = Category.valueOf(category.uppercase()),
-        date = date.toLong(),              // exemplo: converter "1706658000000" para epoch
+        date = date,
         laboratory = laboratory?.let {
             Laboratory(
                 id = it.id,
@@ -33,7 +36,9 @@ fun ExamResultDto.toDomain(): ExamResult {
     return ExamResult(
         fieldName = fieldName,
         resultValue = resultValue,
-        referenceRange = referenceRange
+        referenceRange = referenceRange,
+        unit = unit,
+        interpretation = interpretation
     )
 }
 
@@ -41,18 +46,45 @@ fun ExamResultDto.toDomain(): ExamResult {
 fun Exam.toEntity(): ExamEntity {
     return ExamEntity(
         id = id,
+        userId = userId,
         title = title,
         category = category.name,
         date = date,
         labId = laboratory?.id,
-        notes = notes,
-        userId = userId
+        notes = notes
     )
+}
+
+fun Exam.toResultEntities(): List<ExamResultEntity> {
+    return results.map {
+        ExamResultEntity(
+            examId = id,
+            fieldName = it.fieldName,
+            resultValue = it.resultValue,
+            referenceRange = it.referenceRange,
+            unit = it.unit,
+            interpretation = it.interpretation
+        )
+    }
+}
+
+fun Exam.toAttachmentEntities(): List<FileAttachmentEntity> {
+    return attachments.map {
+        FileAttachmentEntity(
+            id = it.id,
+            examId = id,
+            fileName = it.fileName,
+            fileUrl = it.fileUrl,
+            fileType = it.fileType,
+            uploadedAt = it.uploadedAt
+        )
+    }
 }
 
 fun Exam.toDto(): ExamDto {
     return ExamDto(
         id = id,
+        userId = userId,
         title = title,
         category = category.name,
         date = date,
@@ -83,8 +115,7 @@ fun Exam.toDto(): ExamDto {
                 fileType = it.fileType,
                 uploadedAt = it.uploadedAt
             )
-        },
-        userId = userId
+        }
     )
 }
 
@@ -92,14 +123,47 @@ fun Exam.toDto(): ExamDto {
 fun ExamEntity.toDomain(): Exam {
     return Exam(
         id = id,
+        userId = userId,
         title = title,
         category = Category.valueOf(category.uppercase()),
         date = date,
         laboratory = labId?.let { Laboratory(it, it, null, null, null) },
-        results = emptyList(),
+        results = emptyList(), // use ExamWithDetails.toDomain para obter resultados
         attachments = emptyList(),
-        userId = userId,
         notes = notes,
         createdAt = 1L,
+    )
+}
+
+fun ExamWithDetails.toDomain(): Exam {
+    val e = exam
+    return Exam(
+        id = e.id,
+        userId = e.userId,
+        title = e.title,
+        category = Category.valueOf(e.category.uppercase()),
+        date = e.date,
+        laboratory = e.labId?.let { Laboratory(it, it, null, null, null) },
+        results = results.map {
+            ExamResult(
+                fieldName = it.fieldName,
+                resultValue = it.resultValue,
+                referenceRange = it.referenceRange,
+                unit = it.unit,
+                interpretation = it.interpretation
+            )
+        },
+        attachments = attachments.map {
+            FileAttachment(
+                id = it.id,
+                examId = it.examId,
+                fileName = it.fileName,
+                fileUrl = it.fileUrl,
+                fileType = it.fileType,
+                uploadedAt = it.uploadedAt
+            )
+        },
+        notes = e.notes,
+        createdAt = 1L
     )
 }

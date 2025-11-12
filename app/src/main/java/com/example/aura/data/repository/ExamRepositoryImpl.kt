@@ -1,8 +1,11 @@
 package com.example.aura.data.repository
 
+import android.util.Log
 import com.example.aura.data.local.datasource.ExamLocalDataSource
 import com.example.aura.data.mapper.toDomain
 import com.example.aura.data.mapper.toEntity
+import com.example.aura.data.mapper.toResultEntities
+import com.example.aura.data.mapper.toAttachmentEntities
 import com.example.aura.domain.model.Exam
 import com.example.aura.domain.model.ShareLink
 import com.example.aura.domain.repository.ExamRepository
@@ -23,22 +26,56 @@ class ExamRepositoryImpl(
             localExams.map { it.toDomain() }
         } else {
             val apiExams = remoteDS.getExams().map { it.toDomain() }
-            localDS.saveAll(apiExams.map { it.toEntity() })
+            // salva exam + results + attachments
+            apiExams.forEach { exam ->
+                localDS.saveWithDetails(exam.toEntity(), exam.toResultEntities(), exam.toAttachmentEntities())
+            }
             apiExams
         }
     }
 
     override suspend fun getExamById(id: String): Exam? = withContext(Dispatchers.IO) {
-        localDS.getById(id)?.toDomain()
+        val localWrapper = localDS.getById(id)
+        val local = localWrapper?.toDomain()
+        // if local exists and has results, return it
+        if (local != null && local.results.isNotEmpty()) return@withContext local
+
+        // otherwise try remote and save details when found
+        val remoteDto = try {
+            remoteDS.getExamById(id)
+        } catch (_: Exception) {
+            null
+        }
+
+        if (remoteDto != null) {
+            Log.i("ExamRepository", "remoteDto for id=$id -> results size=${remoteDto.results?.size}")
+        } else {
+            Log.i("ExamRepository", "remoteDto for id=$id is null")
+        }
+
+        val remote = remoteDto?.toDomain()
+        if (remote != null) {
+            // save
+            localDS.saveWithDetails(remote.toEntity(), remote.toResultEntities(), remote.toAttachmentEntities())
+
+            // re-query local to confirm
+            val afterSave = localDS.getById(id)
+            Log.i("ExamRepository", "afterSave local results size=${afterSave?.results?.size}")
+
+            return@withContext remote
+        }
+
+        // fallback: return local even if empty or null
+        local
     }
 
     override suspend fun addExam(exam: Exam) = withContext(Dispatchers.IO) {
-        localDS.save(exam.toEntity())
+        localDS.saveWithDetails(exam.toEntity(), exam.toResultEntities(), exam.toAttachmentEntities())
         // Sincroniza com o servidor (fallback silencioso)
         try {
             remoteDS.uploadExam(exam.toDto()) // ex: envia DTO
-        } catch (e: Exception) {
-            e.printStackTrace() // ou fila offline com WorkManager
+        } catch (_: Exception) {
+            // ignorado
         }
     }
 
@@ -46,7 +83,7 @@ class ExamRepositoryImpl(
         localDS.delete(id)
         try {
             remoteDS.deleteExam(id)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Se não tiver rede, pode marcar como “pending delete”
         }
     }
@@ -65,7 +102,13 @@ class ExamRepositoryImpl(
 
     override suspend fun syncWithRemote(): List<Exam> = withContext(Dispatchers.IO) {
         val remoteExams = remoteDS.getExams().map { it.toDomain() }
-        localDS.replaceAll(remoteExams.map { it.toEntity() })
+        // substitui local: limpar e salvar com detalhes
+        // clear and insert all entities (note: replaceAll currently only inserts ExamEntity list)
+        // para simplicidade, podemos limpar e re-inserir usando saveWithDetails por exam
+        localDS.clear()
+        remoteExams.forEach { exam ->
+            localDS.saveWithDetails(exam.toEntity(), exam.toResultEntities(), exam.toAttachmentEntities())
+        }
         remoteExams
     }
 }
