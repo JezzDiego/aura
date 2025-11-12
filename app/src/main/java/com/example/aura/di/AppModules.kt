@@ -5,27 +5,38 @@ import android.content.Context
 import androidx.room.Room
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
+import com.example.aura.data.local.dao.MedicationDao
 import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.datasource.ExamLocalDataSource
 import com.example.aura.data.local.datasource.LaboratoryLocalDataSource
+import com.example.aura.data.local.datasource.MedicationLocalDataSource
 import com.example.aura.data.local.datasource.UserLocalDataSource
 import com.example.aura.data.local.db.AuraDatabase
 import com.example.aura.data.local.preferences.AuraPreferences
 import com.example.aura.data.remote.api.ExamApi
 import com.example.aura.data.remote.api.LaboratoryApi
+import com.example.aura.data.remote.api.MedicationApi
 import com.example.aura.data.remote.api.UserApi
 import com.example.aura.data.remote.datasource.ExamRemoteDataSource
 import com.example.aura.data.remote.datasource.LaboratoryRemoteDataSource
+import com.example.aura.data.remote.datasource.MedicationRemoteDataSource
 import com.example.aura.data.remote.datasource.UserRemoteDataSource
 import com.example.aura.data.remote.network.RetrofitClient
 import com.example.aura.data.repository.ExamRepositoryImpl
 import com.example.aura.data.repository.LaboratoryRepositoryImpl
+import com.example.aura.data.repository.MedicationRepositoryImpl
 import com.example.aura.data.repository.UserRepositoryImpl
 import com.example.aura.domain.repository.ExamRepository
 import com.example.aura.domain.repository.LaboratoryRepository
+import com.example.aura.domain.repository.MedicationRepository
 import com.example.aura.domain.repository.UserRepository
 import com.example.aura.domain.usecase.exam.*
 import com.example.aura.domain.usecase.laboratory.*
+import com.example.aura.domain.usecase.medication.AddMedicationUseCase
+import com.example.aura.domain.usecase.medication.DeleteMedicationUseCase
+import com.example.aura.domain.usecase.medication.GetSavedMedicationsUseCase
+import com.example.aura.domain.usecase.medication.MedicationUseCases
+import com.example.aura.domain.usecase.medication.SearchMedicationsUseCase
 import com.example.aura.domain.usecase.user.*
 import retrofit2.Retrofit
 
@@ -50,10 +61,13 @@ class AppContainer(context: Context, app: Application) {
     private val laboratoryDao: LaboratoryDao by lazy { database.laboratoryDao() }
     val userDao: UserDao by lazy { database.userDao() }
 
+    private val medicationDao: MedicationDao by lazy { database.medicationDao() }
+
     // APIs
     private val examApi: ExamApi by lazy { retrofit.create(ExamApi::class.java) }
     private val laboratoryApi: LaboratoryApi by lazy { retrofit.create(LaboratoryApi::class.java) }
     private val userApi: UserApi by lazy { retrofit.create(UserApi::class.java) }
+    private val medicationApi: MedicationApi by lazy { retrofit.create(MedicationApi::class.java) }
 
     // Data sources
 
@@ -61,11 +75,13 @@ class AppContainer(context: Context, app: Application) {
     val examLocalDataSource: ExamLocalDataSource by lazy { ExamLocalDataSource(examDao) }
     val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
     val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
+    val medicationLocalDataSource: MedicationLocalDataSource by lazy { MedicationLocalDataSource(medicationDao) }
 
     // remote
     val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
     val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
     val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
+    val medicationRemoteDataSource: MedicationRemoteDataSource by lazy { MedicationRemoteDataSource(medicationApi) }
 
     // Repositories
     val examRepository: ExamRepository by lazy {
@@ -84,6 +100,12 @@ class AppContainer(context: Context, app: Application) {
         UserRepositoryImpl(
             localDS = userLocalDataSource,
             remoteDS = userRemoteDataSource
+        )
+    }
+    val medicationRepository: MedicationRepository by lazy {
+        MedicationRepositoryImpl(
+            localDataSource = medicationLocalDataSource,
+            remoteDataSource = medicationRemoteDataSource
         )
     }
 
@@ -112,6 +134,14 @@ class AppContainer(context: Context, app: Application) {
             getAllUsers = GetUserListUseCase(userRepository),
             getLocalUser = GetLocalUserUseCase(userRepository),
             logoutUser = LogoutUserUseCase(userRepository)
+        )
+    }
+    val medicationUseCases: MedicationUseCases by lazy {
+        MedicationUseCases(
+            getSavedMedications = GetSavedMedicationsUseCase(medicationRepository),
+            addMedication = AddMedicationUseCase(medicationRepository),
+            deleteMedication = DeleteMedicationUseCase(medicationRepository),
+            searchMedications = SearchMedicationsUseCase(medicationRepository)
         )
     }
 

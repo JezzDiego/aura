@@ -11,7 +11,9 @@ const val homeRoute = "homeRoute"
 
 fun NavGraphBuilder.homeScreen(navController: NavController, container: AppContainer) {
     composable(homeRoute) {
-        HomeScreen(container = container)
+        HomeScreen(container = container,
+                navController = navController
+        )
     }
 }
 

@@ -40,6 +40,7 @@ import com.example.aura.presentation.ui.components.FullScreenSearchBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import com.example.aura.presentation.navigation.destinations.medicationScreen
 
 @Serializable
 object LoginRoute
@@ -140,6 +141,7 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                             when (item) {
                                 BottomNavBarItem.HomeNavBarItem -> HomeScreen(
                                     container = container,
+                                    navController = navController,
                                     swipeNavigate = { toItem -> swipeNavigate(toItem) }
                                 )
 
@@ -167,6 +169,8 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
             composable<ExamRoute> {
                 ExamScreen(container = container)
             }
+
+            medicationScreen(navController, container)
         }
     }
 }

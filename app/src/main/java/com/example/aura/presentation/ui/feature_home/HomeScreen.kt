@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -30,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.aura.presentation.navigation.destinations.navigateToMedicationScreen
 import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
@@ -42,7 +45,8 @@ data class ActionItem(val icon: ImageVector, val title: String, val subtitle: St
 fun HomeScreen(
     modifier: Modifier = Modifier,
     container: AppContainer,
-    swipeNavigate: (BottomNavBarItem) -> Unit = {}
+    navController: NavController,
+    swipeNavigate: (BottomNavBarItem) -> Unit = {},
 ) {
     val factory = HomeViewModelFactory(
         container.examUseCases,
@@ -64,9 +68,10 @@ fun HomeScreen(
             subtitle = "Faça upload de um novo resultado",
         ),
         ActionItem(
-            Icons.AutoMirrored.Filled.ShowChart,
-            title = "Tendências e Relatórios",
-            subtitle = "Visualize seus dados de saúde"
+            Icons.Filled.Medication,
+            title = "Medicações",
+            subtitle = "Salve suas medicações",
+            navigate = { navController.navigateToMedicationScreen()}
         )
     )
 
