@@ -69,7 +69,6 @@ fun HomeScreen(
             Icons.AutoMirrored.Filled.ShowChart,
             title = "Tendências e Relatórios",
             subtitle = "Visualize seus dados de saúde",
-            navigate = { navController.navigateToExamDetailsScreen()}
         )
     )
 

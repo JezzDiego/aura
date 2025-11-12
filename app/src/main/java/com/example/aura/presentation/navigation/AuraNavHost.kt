@@ -34,7 +34,10 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
     }
 
     startDestination?.let {
-        NavHost(navController = navController, startDestination = it) {
+        NavHost(
+            navController = navController,
+            startDestination = it,
+        ) {
 
             loginScreen(container, navController)
 

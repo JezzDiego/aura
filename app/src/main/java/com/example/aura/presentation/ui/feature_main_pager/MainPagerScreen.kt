@@ -67,7 +67,7 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
 
     Scaffold(
         topBar = {
-            SearchTopAppBar(container)
+            SearchTopAppBar(container, navController)
         },
         bottomBar = {
             BottomNavBar(
@@ -102,7 +102,8 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
                     )
 
                     BottomNavBarItem.ExamNavBarItem -> ExamScreen(
-                        container = container
+                        container = container,
+                        navController = navController
                     )
 
                     BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(
@@ -118,7 +119,7 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTopAppBar(container: AppContainer) {
+fun SearchTopAppBar(container: AppContainer, navController: NavHostController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     TopAppBar(
@@ -137,7 +138,7 @@ fun SearchTopAppBar(container: AppContainer) {
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.Absolute.Center
             ) {
-                FullScreenSearchBar(container)
+                FullScreenSearchBar(container, navController)
             }
         },
         scrollBehavior = scrollBehavior

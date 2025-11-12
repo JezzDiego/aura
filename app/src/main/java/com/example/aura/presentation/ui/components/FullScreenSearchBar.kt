@@ -27,9 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
+import androidx.navigation.NavHostController
 import com.example.aura.di.AppContainer
 import com.example.aura.domain.model.Exam
 import com.example.aura.domain.model.Laboratory
+import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
 import com.example.aura.utils.formatDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +39,7 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FullScreenSearchBar(container: AppContainer) {
+fun FullScreenSearchBar(container: AppContainer, navController: NavHostController) {
     val searchBarState = rememberSearchBarState()
     val textFieldState = rememberTextFieldState()
     val scope = rememberCoroutineScope()
@@ -152,13 +154,21 @@ fun FullScreenSearchBar(container: AppContainer) {
             } else {
                 filteredExams.forEach { exam ->
                      ExamCard(
-                            exam = ExamItem(
-                                title = exam.title,
-                                subtitle = exam.laboratory!!.name,
-                                date = formatDate(exam.date),
-                                tag = exam.category.displayName
-                            ),
-                        )
+                         onClick = {
+                             scope.launch { searchBarState.animateToCollapsed() }
+
+                             navController.navigateToExamDetailsScreen(
+                                    examId = exam.id
+                             )
+                         },
+
+                        exam = ExamItem(
+                            title = exam.title,
+                            subtitle = exam.laboratory!!.name,
+                            date = formatDate(exam.date),
+                            tag = exam.category.displayName
+                        ),
+                     )
                 }
             }
         }
