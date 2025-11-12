@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import com.example.aura.data.local.dao.ArticleDao
 import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
+import com.example.aura.data.local.dao.MedicationDao
 import com.example.aura.data.local.dao.UserDao
 import com.example.aura.data.local.entity.*
 
@@ -16,9 +17,9 @@ import com.example.aura.data.local.entity.*
         LaboratoryEntity::class,
         FileAttachmentEntity::class,
         UserEntity::class,
-        ArticleEntity::class
-               ],
-    version = 4,
+        ArticleEntity::class,
+        MedicationEntity::class],
+    version = 5,
 )
 @TypeConverters(Converters::class)
 abstract class AuraDatabase : RoomDatabase() {
@@ -26,4 +27,5 @@ abstract class AuraDatabase : RoomDatabase() {
     abstract fun laboratoryDao(): LaboratoryDao
     abstract fun userDao(): UserDao
     abstract fun articleDao(): ArticleDao
+    abstract fun medicationDao(): MedicationDao
 }

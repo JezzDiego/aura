@@ -19,6 +19,7 @@ import com.example.aura.presentation.navigation.destinations.loginScreen
 import com.example.aura.presentation.navigation.destinations.mainPagerScreen
 import com.example.aura.presentation.navigation.destinations.loginRoute
 import com.example.aura.presentation.navigation.destinations.mainPagerRoute
+import com.example.aura.presentation.navigation.destinations.medicationScreen
 import com.example.aura.presentation.navigation.destinations.newsDetailsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +49,8 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
             examDetailsScreen(container, navController)
 
             newsDetailsScreen(container, navController)
+
+            medicationScreen(container, navController)
         }
     }
 }

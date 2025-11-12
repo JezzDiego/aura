@@ -7,9 +7,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -35,6 +35,7 @@ import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
 import com.example.aura.presentation.navigation.destinations.navigateToAddExamScreen
+import com.example.aura.presentation.navigation.destinations.navigateToMedicationScreen
 import com.example.aura.utils.formatDate
 
 data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String, val navigate: () -> Unit = {})
@@ -69,9 +70,10 @@ fun HomeScreen(
             }
         ),
         ActionItem(
-            Icons.AutoMirrored.Filled.ShowChart,
-            title = "Tendências e Relatórios",
-            subtitle = "Visualize seus dados de saúde",
+            Icons.Filled.Medication,
+            title = "Medicações",
+            subtitle = "Salve suas medicações",
+            navigate = { navController.navigateToMedicationScreen()}
         )
     )
 
