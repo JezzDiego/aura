@@ -35,6 +35,7 @@ import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
 import com.example.aura.presentation.navigation.destinations.navigateToAddExamScreen
+import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
 import com.example.aura.presentation.navigation.destinations.navigateToMedicationScreen
 import com.example.aura.utils.formatDate
 
@@ -185,6 +186,11 @@ fun HomeScreen(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .aspectRatio(cardAspect),
+                                                    onClick = {
+                                                        navController.navigateToExamDetailsScreen(
+                                                            examId = exam.id
+                                                        )
+                                                    },
                                                     title = exam.title,
                                                     date = formatDate(exam.date),
                                                 )
@@ -293,13 +299,14 @@ fun ExamCard(
     modifier: Modifier = Modifier,
     title: String,
     date: String,
+    onClick: () -> Unit,
     color: CardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     ) {
     Card(
         shape = RoundedCornerShape(18.dp),
         modifier = modifier,
         colors = color,
-        onClick = { /* TODO: ação ao clicar */ }
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier
