@@ -8,19 +8,31 @@ import com.example.aura.domain.model.ShareLink
 import com.example.aura.domain.repository.ExamRepository
 import com.example.aura.data.mapper.toDto
 import com.example.aura.data.remote.datasource.ExamRemoteDataSource
+import com.example.aura.domain.repository.LaboratoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class ExamRepositoryImpl(
     private val localDS: ExamLocalDataSource,
-    private val remoteDS: ExamRemoteDataSource
+    private val remoteDS: ExamRemoteDataSource,
+    private val laboratoryRepository: LaboratoryRepository
 ) : ExamRepository {
 
     override suspend fun getAllExams(): List<Exam> = withContext(Dispatchers.IO) {
         val localExams = localDS.getAll()
         if (localExams.isNotEmpty()) {
-            localExams.map { it.toDomain() }
+            localExams.map { entity ->
+                val resolvedLab = entity.labId?.let { labId ->
+                    try {
+                        laboratoryRepository.getLaboratoryById(labId)
+                    } catch (_: Throwable) {
+                        null
+                    }
+                }
+                val exam = entity.toDomain()
+                if (resolvedLab != null) exam.copy(laboratory = resolvedLab) else exam
+            }
         } else {
             val apiExams = remoteDS.getExams().map { it.toDomain() }
             localDS.saveAll(apiExams.map { it.toEntity() })
@@ -29,14 +41,28 @@ class ExamRepositoryImpl(
     }
 
     override suspend fun getExamById(id: String): Exam? = withContext(Dispatchers.IO) {
-        localDS.getById(id)?.toDomain()
+        localDS.getById(id)?.let { entity ->
+            val resolvedLab = entity.labId?.let { labId ->
+                try {
+                    laboratoryRepository.getLaboratoryById(labId)
+                } catch (_: Throwable) {
+                    null
+                }
+            }
+            val exam = entity.toDomain()
+            if (resolvedLab != null) exam.copy(laboratory = resolvedLab) else exam
+        }
     }
 
     override suspend fun addExam(exam: Exam) = withContext(Dispatchers.IO) {
-        localDS.save(exam.toEntity())
+        // Garantir que o exame tenha um ID único antes de salvar localmente
+        val examId = if (exam.id.isBlank()) UUID.randomUUID().toString() else exam.id
+        val examWithId = if (exam.id == examId) exam else exam.copy(id = examId)
+
+        localDS.save(examWithId.toEntity())
         // Sincroniza com o servidor (fallback silencioso)
         try {
-            remoteDS.uploadExam(exam.toDto()) // ex: envia DTO
+            remoteDS.uploadExam(examWithId.toDto()) // ex: envia DTO
         } catch (e: Exception) {
             e.printStackTrace() // ou fila offline com WorkManager
         }
