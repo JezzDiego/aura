@@ -13,5 +13,6 @@ enum class Category(val displayName: String) {
     MICROBIOLOGIA("Microbiologia"),
     ENDOCRINOLOGIA("Endocrinologia"),
     IMUNOLOGIA("Imunologia"),
-    IMAGEM("Imagem"),
+    // Categoria duplicada, se precisar, tenho que mudar no seletor de addExam
+    // IMAGEM("Imagem"),
 }

@@ -33,6 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aura.presentation.ui.feature_add_exam.AddExamScreen
 import com.example.aura.presentation.ui.feature_login.LoginScreen
 import kotlinx.coroutines.launch
 import com.example.aura.di.AppContainer
@@ -49,6 +50,9 @@ object HomeRoute
 
 @Serializable
 object ExamRoute
+
+@Serializable
+object AddExamRoute
 
 val bottomNavBarItems = listOf(
     BottomNavBarItem.HomeNavBarItem,
@@ -140,11 +144,17 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
                             when (item) {
                                 BottomNavBarItem.HomeNavBarItem -> HomeScreen(
                                     container = container,
-                                    swipeNavigate = { toItem -> swipeNavigate(toItem) }
+                                    swipeNavigate = { toItem -> swipeNavigate(toItem) },
+                                    onNavigateToAddExam = {
+                                        navController.navigate(AddExamRoute)
+                                    }
                                 )
 
                                 BottomNavBarItem.ExamNavBarItem -> ExamScreen(
-                                    container = container
+                                    container = container,
+                                    onNavigateToAddExam = {
+                                        navController.navigate(AddExamRoute)
+                                    }
                                 )
 
                                 BottomNavBarItem.ProfileNavBarItem -> ProfileScreen(
@@ -165,7 +175,14 @@ fun AuraNavHost(navController: NavHostController, container: AppContainer) {
             }
 
             composable<ExamRoute> {
-                ExamScreen(container = container)
+                ExamScreen(container = container,
+                    onNavigateToAddExam = {
+                        navController.navigate(AddExamRoute)
+                    })
+            }
+
+            composable<AddExamRoute> {
+                AddExamScreen(container = container, navController = navController)
             }
         }
     }

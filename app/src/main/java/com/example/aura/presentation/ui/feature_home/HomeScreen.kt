@@ -42,7 +42,8 @@ data class ActionItem(val icon: ImageVector, val title: String, val subtitle: St
 fun HomeScreen(
     modifier: Modifier = Modifier,
     container: AppContainer,
-    swipeNavigate: (BottomNavBarItem) -> Unit = {}
+    swipeNavigate: (BottomNavBarItem) -> Unit = {},
+    onNavigateToAddExam: () -> Unit
 ) {
     val factory = HomeViewModelFactory(
         container.examUseCases,
@@ -62,6 +63,7 @@ fun HomeScreen(
             Icons.Default.Description,
             title = "Adicionar Novo",
             subtitle = "Faça upload de um novo resultado",
+            navigate = onNavigateToAddExam
         ),
         ActionItem(
             Icons.AutoMirrored.Filled.ShowChart,

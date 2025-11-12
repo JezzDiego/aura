@@ -49,6 +49,7 @@ import com.example.aura.utils.formatDate
 @Composable
 fun ExamScreen(
     container: AppContainer,
+    onNavigateToAddExam: () -> Unit
 ) {
     val factory = ExamViewModelFactory(container.examUseCases)
     val viewModel: ExamViewModel = viewModel(factory = factory)
@@ -81,7 +82,7 @@ fun ExamScreen(
                 )
 
                 Card(
-                    onClick = { /* TODO */ },
+                    onClick = { onNavigateToAddExam() },
                     shape = MaterialTheme.shapes.small,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant

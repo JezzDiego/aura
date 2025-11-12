@@ -8,10 +8,16 @@ import com.example.aura.presentation.ui.feature_exam.ExamScreen
 
 const val examRoute = "examRoute"
 
+fun NavGraphBuilder.examScreen(
+    container: AppContainer,
+    onNavigateToAddExam: () -> Unit
+) {
 
-fun NavGraphBuilder.examScreen(navController: NavController, container: AppContainer) {
     composable(examRoute) {
-        ExamScreen(container)
+        ExamScreen(
+            container = container,
+            onNavigateToAddExam = onNavigateToAddExam
+        )
     }
 }
 
