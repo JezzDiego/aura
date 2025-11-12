@@ -92,4 +92,6 @@ dependencies {
 
     // OkHttp Logging Interceptor
 //    implementation("com.squareup.okhttp3:logging-interceptor:5.3.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }

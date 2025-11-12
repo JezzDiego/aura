@@ -29,11 +29,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.aura.di.AppContainer
+import com.example.aura.presentation.navigation.destinations.newsScreen
 import com.example.aura.presentation.ui.components.SearchBar
+import com.example.aura.presentation.ui.feature_news.NewsScreen
 import com.example.aura.presentation.ui.feature_settings.SettingsScreen
+import newsDetailNavigation
 
 
 @Serializable
@@ -44,29 +49,43 @@ val bottomNavBarItems = listOf(
     BottomNavBarItem.ExamNavBarItem,
     BottomNavBarItem.ProfileNavBarItem,
     BottomNavBarItem.SettingsNavBarItem,
+    BottomNavBarItem.NewsNavBarItem
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuraNavHost(navController: NavHostController) {
+fun AuraNavHost(navController: NavHostController, container: AppContainer) {
     NavHost(navController = navController, startDestination = NavPager) {
+        newsScreen(navController, container)
+        newsDetailNavigation(navController, container)
+
         composable<NavPager> {
-            var selectedItem by remember {
-                val item = bottomNavBarItems.first()
-                mutableStateOf(item)
+            var selectedItemLabel by rememberSaveable {
+                mutableStateOf(bottomNavBarItems.first().label)
             }
 
-            val pageState = rememberPagerState {
-                bottomNavBarItems.size
+            var selectedItem = remember(selectedItemLabel) {
+                bottomNavBarItems.first { it.label == selectedItemLabel }
             }
+
+            val initialPageIndex = remember(selectedItem) {
+                bottomNavBarItems.indexOf(selectedItem)
+            }
+
+            val pageState = rememberPagerState(
+                initialPage = initialPageIndex,
+                pageCount = { bottomNavBarItems.size }
+            )
 
             LaunchedEffect(selectedItem) {
                 val currentIndex = bottomNavBarItems.indexOf(selectedItem)
-                pageState.animateScrollToPage(currentIndex)
+                if (pageState.currentPage != currentIndex) {
+                    pageState.animateScrollToPage(currentIndex)
+                }
             }
 
             LaunchedEffect(pageState.targetPage) {
-                selectedItem = bottomNavBarItems[pageState.targetPage]
+                selectedItemLabel = bottomNavBarItems[pageState.targetPage].label
             }
 
             val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -101,7 +120,7 @@ fun AuraNavHost(navController: NavHostController) {
                     BottomNavBar(
                         selectedItem = selectedItem,
                         onItemChanged = { item ->
-                            selectedItem = item
+                            selectedItemLabel = item.label
                         }
                     )
                 }
@@ -118,6 +137,7 @@ fun AuraNavHost(navController: NavHostController) {
                             BottomNavBarItem.ExamNavBarItem -> ExamScreen()
                             BottomNavBarItem.ProfileNavBarItem -> ProfileScreen()
                             BottomNavBarItem.SettingsNavBarItem -> SettingsScreen()
+                            BottomNavBarItem.NewsNavBarItem -> NewsScreen(navController, container)
                         }
                     }
                 }
@@ -125,6 +145,7 @@ fun AuraNavHost(navController: NavHostController) {
             }
         }
     }
+
 }
 
 @Composable

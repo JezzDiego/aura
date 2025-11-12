@@ -8,7 +8,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://api.my-aura.com/v1/"
+     private const val BASE_URL = "https://api.my-aura.com/v1/"
+    private const val BASE_URL_ARTICLES = "https://my-json-server.typicode.com/danielberg3/Aura-articles/"
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
@@ -25,6 +26,14 @@ object RetrofitClient {
     val instance: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val instance2: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_ARTICLES)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
