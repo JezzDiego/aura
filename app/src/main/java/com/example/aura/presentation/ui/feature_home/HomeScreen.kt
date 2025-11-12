@@ -30,9 +30,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.aura.di.AppContainer
 import com.example.aura.core.ResultWrapper
 import com.example.aura.presentation.navigation.BottomNavBarItem
+import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
 import com.example.aura.utils.formatDate
 
 data class ActionItem(val icon: ImageVector, val title: String, val subtitle: String, val navigate: () -> Unit = {})
@@ -40,9 +42,9 @@ data class ActionItem(val icon: ImageVector, val title: String, val subtitle: St
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     container: AppContainer,
-    swipeNavigate: (BottomNavBarItem) -> Unit = {}
+    swipeNavigate: (BottomNavBarItem) -> Unit,
+    navController: NavHostController
 ) {
     val factory = HomeViewModelFactory(
         container.examUseCases,
@@ -66,12 +68,12 @@ fun HomeScreen(
         ActionItem(
             Icons.AutoMirrored.Filled.ShowChart,
             title = "Tendências e Relatórios",
-            subtitle = "Visualize seus dados de saúde"
+            subtitle = "Visualize seus dados de saúde",
         )
     )
 
     Surface(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {

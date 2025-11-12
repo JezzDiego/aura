@@ -25,12 +25,12 @@ data class ExamItem(
 )
 
 @Composable
-fun ExamCard(exam: ExamItem) {
+fun ExamCard(modifier: Modifier = Modifier, exam: ExamItem, onClick: () -> Unit) {
     val shape = MaterialTheme.shapes.medium
 
     Card(
-        onClick = { /* open exam */ },
-        modifier = Modifier
+        onClick = onClick,
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clip(shape),

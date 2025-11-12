@@ -1,5 +1,6 @@
 package com.example.aura.presentation.ui.feature_exam
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,10 +38,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.aura.core.ResultWrapper
 import com.example.aura.data.local.db.Converters
 import com.example.aura.di.AppContainer
 import com.example.aura.domain.model.Category
+import com.example.aura.presentation.navigation.destinations.navigateToExamDetailsScreen
 import com.example.aura.presentation.ui.components.ExamCard
 import com.example.aura.presentation.ui.components.ExamItem
 import com.example.aura.utils.formatDate
@@ -49,6 +52,7 @@ import com.example.aura.utils.formatDate
 @Composable
 fun ExamScreen(
     container: AppContainer,
+    navController: NavHostController
 ) {
     val factory = ExamViewModelFactory(container.examUseCases)
     val viewModel: ExamViewModel = viewModel(factory = factory)
@@ -62,7 +66,7 @@ fun ExamScreen(
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp),
         color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -140,6 +144,11 @@ fun ExamScreen(
                                 content = {
                                     items(exams) { exam ->
                                         ExamCard(
+                                            onClick = {
+                                                navController.navigateToExamDetailsScreen(
+                                                    examId = exam.id
+                                                )
+                                            },
                                             exam = ExamItem(
                                                 title = exam.title,
                                                 subtitle = exam.laboratory?.name
