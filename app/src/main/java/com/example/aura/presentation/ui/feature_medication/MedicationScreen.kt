@@ -1,6 +1,7 @@
 package com.example.aura.presentation.ui.feature_medication
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -25,6 +26,8 @@ import androidx.navigation.NavController
 import com.example.aura.di.AppContainer
 import com.example.aura.domain.model.Medication
 import com.example.aura.domain.model.MedicationSchedule
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,6 +167,7 @@ private fun TopBar(onBack: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddMedicationForm(
     name: String,
@@ -179,6 +183,16 @@ private fun AddMedicationForm(
     onAddClick: () -> Unit,
     onSuggestionSelected: (Medication) -> Unit
 ) {
+    var showTimePickerDialog by remember { mutableStateOf(false) }
+
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         OutlinedTextField(
             value = name,
@@ -223,6 +237,9 @@ private fun AddMedicationForm(
             OutlinedTextField(
                 value = interval,
                 onValueChange = onIntervalChange,
+                placeholder = {
+                    Text(text = "12")
+                },
                 label = { Text("Intervalo (h)") },
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -233,11 +250,45 @@ private fun AddMedicationForm(
             OutlinedTextField(
                 value = startTime,
                 onValueChange = onStartTimeChange,
-                label = { Text("Início (HH:mm)") },
-                trailingIcon = { Icon(Icons.Default.AccessTime, null) },
+                placeholder = {
+                    Text(text = "08:00" )
+                },
+                label = { Text("Início (HH:mm)", maxLines = 1) },
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                showTimePickerDialog = true
+                            },
+                        imageVector = Icons.Default.AccessTime,
+                        contentDescription = "Ícone de horário",
+                    ) },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true
+            )
+        }
+
+        if (showTimePickerDialog) {
+            AlertDialog(
+                onDismissRequest = { showTimePickerDialog = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val h = timePickerState.hour
+                        val m = timePickerState.minute
+                        val formatted = String.format(Locale.getDefault(), "%02d:%02d", h, m)
+                        onStartTimeChange(formatted)
+                        showTimePickerDialog = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePickerDialog = false }) { Text("Cancelar") }
+                },
+                text = {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        TimePicker(state = timePickerState)
+                    }
+                }
             )
         }
 

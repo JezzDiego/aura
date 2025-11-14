@@ -23,8 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,22 +49,20 @@ val bottomNavBarItems = listOf(
 
 @Composable
 fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
-    var selectedItem by remember {
-        val item = bottomNavBarItems.first()
-        mutableStateOf(item)
-    }
+    // preservar índice selecionado entre recomposições/navegações
+    var selectedIndex by rememberSaveable { mutableStateOf(0) }
 
-    val pageState = rememberPagerState {
-        bottomNavBarItems.size
-    }
+    val pageState = rememberPagerState(
+        initialPage = selectedIndex,
+        pageCount = { bottomNavBarItems.size }
+    )
 
-    LaunchedEffect(selectedItem) {
-        val currentIndex = bottomNavBarItems.indexOf(selectedItem)
-        pageState.animateScrollToPage(currentIndex)
+    LaunchedEffect(selectedIndex) {
+        pageState.animateScrollToPage(selectedIndex)
     }
 
     LaunchedEffect(pageState.targetPage) {
-        selectedItem = bottomNavBarItems[pageState.targetPage]
+        selectedIndex = pageState.targetPage
     }
 
     Scaffold(
@@ -73,9 +71,9 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
         },
         bottomBar = {
             BottomNavBar(
-                selectedItem = selectedItem,
-                onItemChanged = { item ->
-                    selectedItem = item
+                selectedIndex = selectedIndex,
+                onItemChanged = { idx ->
+                    selectedIndex = idx
                 }
             )
         }
@@ -93,7 +91,6 @@ fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
                     coroutineScope.launch {
                         pageState.animateScrollToPage(targetIndex)
                     }
-
                 }
 
                 when (item) {
@@ -154,26 +151,23 @@ fun SearchTopAppBar(container: AppContainer, navController: NavHostController) {
 
 @Composable
 fun BottomNavBar(
-    selectedItem: BottomNavBarItem,
-    onItemChanged: (BottomNavBarItem) -> Unit,
+    selectedIndex: Int,
+    onItemChanged: (Int) -> Unit,
 ) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
         contentColor = MaterialTheme.colorScheme.onSurface,
     ){
-        bottomNavBarItems.forEach { item ->
+        bottomNavBarItems.forEachIndexed { index, item ->
             NavigationBarItem(
-                selected = selectedItem.label == item.label, onClick = {
-                    onItemChanged(item)
-                },
+                selected = selectedIndex == index,
+                onClick = { onItemChanged(index) },
                 icon = {
                     Icon(
                         item.icon,
                         contentDescription = "",
                         modifier = Modifier
-                            .size(
-                                22.dp
-                            )
+                            .size(22.dp)
                     )
                 },
                 label = { Text(item.label, fontSize = 12.sp) },
