@@ -27,18 +27,6 @@ app/
     utils/             # Extensões e constantes
 ```
 
-## Pontos principais
-- Domain não conhece Android nem UI.
-- Data implementa as interfaces de Domain (repositories) e orquestra local/remote.
-- Presentation usa use cases e expõe estado imutável para a UI Compose.
-- `MainActivity` renderiza a `HomeScreen()` e aplica `AuraTheme`.
-
-## Próximos passos sugeridos
-- Adicionar Hilt (ou Koin) nos módulos em `di/` e anotar ViewModels.
-- Criar `HomeViewModel` com `StateFlow<HomeUiState>` e conectar na `HomeScreen`.
-- Introduzir Navigation Compose e um `NavHost` em `MainActivity` (usando `presentation/navigation`).
-- Implementar um `SampleUseCase` real, injetando `SampleRepositoryImpl`.
-
 ## Como rodar
 Pelo Android Studio, sincronize o Gradle e rode o app. Via terminal:
 
