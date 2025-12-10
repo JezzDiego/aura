@@ -9,7 +9,7 @@ class AuraApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this, this)
+        container = AppContainer(this)
     }
 }
 

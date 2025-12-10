@@ -9,5 +9,5 @@ interface ArticlesApi{
     suspend fun getArticles(): List<ArticleDTO>
 
     @GET("articles/{id}")
-    suspend fun getArticlesById(@Path("id") id: String): ArticleDTO
+    suspend fun getArticleById(@Path("id") id: String): ArticleDTO
 }
