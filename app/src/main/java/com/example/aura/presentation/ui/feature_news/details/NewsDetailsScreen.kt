@@ -1,7 +1,6 @@
 package com.example.aura.presentation.ui.feature_news.details
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,8 +32,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +51,7 @@ import com.example.aura.core.ResultWrapper
 import com.example.aura.di.AppContainer
 import com.example.aura.domain.model.Article
 import com.example.aura.utils.formatarDataParaBR
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -204,7 +202,7 @@ fun ReadArticle(
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                "${dataFormatada} • ${article?.fonte}",
+                "$dataFormatada • ${article?.fonte}",
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(Modifier.height(24.dp))
@@ -231,7 +229,7 @@ fun ReadFullArticleButton(
 
     Button(
         onClick = {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val intent = Intent(Intent.ACTION_VIEW, url?.toUri())
             context.startActivity(intent)
         },
         modifier = Modifier

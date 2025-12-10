@@ -22,7 +22,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,7 +50,7 @@ val bottomNavBarItems = listOf(
 @Composable
 fun MainPagerScreen(container: AppContainer, navController: NavHostController) {
     // preservar índice selecionado entre recomposições/navegações
-    var selectedIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val pageState = rememberPagerState(
         initialPage = selectedIndex,
