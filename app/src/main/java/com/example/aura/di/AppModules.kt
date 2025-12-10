@@ -8,6 +8,7 @@ import com.example.aura.data.local.dao.ExamDao
 import com.example.aura.data.local.dao.LaboratoryDao
 import com.example.aura.data.local.dao.MedicationDao
 import com.example.aura.data.local.dao.UserDao
+import com.example.aura.data.local.datasource.ArticleLocalDataSource
 import com.example.aura.data.local.datasource.ExamLocalDataSource
 import com.example.aura.data.local.datasource.LaboratoryLocalDataSource
 import com.example.aura.data.local.datasource.MedicationLocalDataSource
@@ -19,6 +20,7 @@ import com.example.aura.data.remote.api.ExamApi
 import com.example.aura.data.remote.api.LaboratoryApi
 import com.example.aura.data.remote.api.MedicationApi
 import com.example.aura.data.remote.api.UserApi
+import com.example.aura.data.remote.datasource.ArticleRemoteDataSource
 import com.example.aura.data.remote.datasource.ExamRemoteDataSource
 import com.example.aura.data.remote.datasource.LaboratoryRemoteDataSource
 import com.example.aura.data.remote.datasource.MedicationRemoteDataSource
@@ -88,13 +90,14 @@ class AppContainer(context: Context, app: Application) {
     val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
     val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
     val medicationLocalDataSource: MedicationLocalDataSource by lazy { MedicationLocalDataSource(medicationDao) }
+    val articleLocalDataSource: ArticleLocalDataSource by lazy { ArticleLocalDataSource(articleDao) }
 
     // remote
     val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
     val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
     val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
     val medicationRemoteDataSource: MedicationRemoteDataSource by lazy { MedicationRemoteDataSource(medicationApi) }
-
+    val articleRemoteDataSource: ArticleRemoteDataSource by lazy { ArticleRemoteDataSource(articleApi) }
     // Repositories
     val examRepository: ExamRepository by lazy {
         ExamRepositoryImpl(
@@ -114,10 +117,10 @@ class AppContainer(context: Context, app: Application) {
             remoteDS = userRemoteDataSource
         )
     }
-    val articleRepository: ArticleRepository by lazy {
+    val articleRepository: ArticleRepositoryImpl by lazy {
         ArticleRepositoryImpl(
-            api = articleApi,
-            dao = articleDao
+            localDS = articleLocalDataSource,
+            remoteDS = articleRemoteDataSource
         )
     }
     val medicationRepository: MedicationRepositoryImpl by lazy {
