@@ -1,7 +1,6 @@
 package com.example.aura.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
 import com.example.aura.data.local.dao.ArticleDao
 import com.example.aura.data.local.dao.ExamDao
@@ -34,6 +33,7 @@ import com.example.aura.data.repository.UserRepositoryImpl
 import com.example.aura.domain.repository.ArticleRepository
 import com.example.aura.domain.repository.ExamRepository
 import com.example.aura.domain.repository.LaboratoryRepository
+import com.example.aura.domain.repository.MedicationRepository
 import com.example.aura.domain.repository.UserRepository
 import com.example.aura.domain.usecase.article.ArticleUseCases
 import com.example.aura.domain.usecase.article.GetArticleByIdUseCase
@@ -55,8 +55,8 @@ import kotlin.getValue
 /**
  * Manual DI container. Instantiate once (e.g., in Application) and access its singletons.
  */
-class AppContainer(context: Context, app: Application) {
-    val application = app
+class AppContainer(context: Application) {
+    val app = context
 
     // Core singletons
     private val retrofit: Retrofit by lazy { RetrofitClient.instance }
@@ -86,44 +86,44 @@ class AppContainer(context: Context, app: Application) {
     // Data sources
 
     // local
-    val examLocalDataSource: ExamLocalDataSource by lazy { ExamLocalDataSource(examDao) }
-    val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
-    val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
-    val medicationLocalDataSource: MedicationLocalDataSource by lazy { MedicationLocalDataSource(medicationDao) }
-    val articleLocalDataSource: ArticleLocalDataSource by lazy { ArticleLocalDataSource(articleDao) }
+    private val examLocalDataSource: ExamLocalDataSource by lazy { ExamLocalDataSource(examDao) }
+    private val laboratoryLocalDataSource: LaboratoryLocalDataSource by lazy { LaboratoryLocalDataSource(laboratoryDao) }
+    private val userLocalDataSource: UserLocalDataSource by lazy { UserLocalDataSource(userDao) }
+    private val medicationLocalDataSource: MedicationLocalDataSource by lazy { MedicationLocalDataSource(medicationDao) }
+    private val articleLocalDataSource: ArticleLocalDataSource by lazy { ArticleLocalDataSource(articleDao) }
 
     // remote
-    val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
-    val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
-    val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
-    val medicationRemoteDataSource: MedicationRemoteDataSource by lazy { MedicationRemoteDataSource(medicationApi) }
-    val articleRemoteDataSource: ArticleRemoteDataSource by lazy { ArticleRemoteDataSource(articleApi) }
+    private val examRemoteDataSource: ExamRemoteDataSource by lazy { ExamRemoteDataSource(examApi) }
+    private val laboratoryRemoteDataSource: LaboratoryRemoteDataSource by lazy { LaboratoryRemoteDataSource(laboratoryApi) }
+    private val userRemoteDataSource: UserRemoteDataSource by lazy { UserRemoteDataSource(userApi) }
+    private val medicationRemoteDataSource: MedicationRemoteDataSource by lazy { MedicationRemoteDataSource(medicationApi) }
+    private val articleRemoteDataSource: ArticleRemoteDataSource by lazy { ArticleRemoteDataSource(articleApi) }
     // Repositories
-    val examRepository: ExamRepository by lazy {
+    private val examRepository: ExamRepository by lazy {
         ExamRepositoryImpl(
             localDS = examLocalDataSource,
             remoteDS = examRemoteDataSource
         )
     }
-    val laboratoryRepository: LaboratoryRepository by lazy {
+    private val laboratoryRepository: LaboratoryRepository by lazy {
         LaboratoryRepositoryImpl(
             localDS = laboratoryLocalDataSource,
             remoteDS = laboratoryRemoteDataSource
         )
     }
-    val userRepository: UserRepository by lazy {
+    private val userRepository: UserRepository by lazy {
         UserRepositoryImpl(
             localDS = userLocalDataSource,
             remoteDS = userRemoteDataSource
         )
     }
-    val articleRepository: ArticleRepositoryImpl by lazy {
+    private val articleRepository: ArticleRepository by lazy {
         ArticleRepositoryImpl(
             localDS = articleLocalDataSource,
             remoteDS = articleRemoteDataSource
         )
     }
-    val medicationRepository: MedicationRepositoryImpl by lazy {
+    private val medicationRepository: MedicationRepository by lazy {
         MedicationRepositoryImpl(
             localDataSource = medicationLocalDataSource,
             remoteDataSource = medicationRemoteDataSource

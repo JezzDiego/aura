@@ -61,7 +61,7 @@ fun ProfileScreen(
     container: AppContainer,
     navController: NavHostController
 ) {
-    val factory = ProfileViewModelFactory(container.userUseCases, app = container.application)
+    val factory = ProfileViewModelFactory(container.userUseCases, app = container.app)
     val viewModel: ProfileViewModel = viewModel(factory = factory)
     val userState by viewModel.uiUserState.collectAsState()
 
