@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Marca do logo Entrada Livre (convertida dos vetores do Figma, node 1:2) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36.8dp"
+    android:height="36.8dp"
+    android:viewportWidth="36.8"
+    android:viewportHeight="36.8">
+    <path
+        android:fillColor="#0D57D5"
+        android:pathData="M9.2,0H27.6C32.6776,0 36.8,4.12238 36.8,9.2V27.6C36.8,32.6776 32.6776,36.8 27.6,36.8H9.2C4.12238,36.8 0,32.6776 0,27.6V9.2C0,4.12238 4.12238,0 9.2,0Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14.72,11.04a3.68,3.68 0,1 0,7.36 0a3.68,3.68 0,1 0,-7.36 0z" />
+    <path
+        android:pathData="M12.88,18.4C12.88,17.388 13.708,16.56 14.72,16.56H22.08C23.092,16.56 23.92,17.388 23.92,18.4V23C23.92,25.024 22.264,26.68 20.24,26.68H16.56C14.536,26.68 12.88,25.024 12.88,23V18.4Z"
+        android:strokeWidth="2.3"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M11.04,19.32H25.76"
+        android:strokeWidth="2.3"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M18.4,26.68V32.2"
+        android:strokeWidth="2.3"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+</vector>

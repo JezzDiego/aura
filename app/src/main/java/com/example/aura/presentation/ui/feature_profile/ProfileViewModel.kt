@@ -1,80 +1,113 @@
 package com.example.aura.presentation.ui.feature_profile
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.aura.core.BaseViewModel
-import com.example.aura.core.ResultWrapper
+import com.example.aura.core.UiEvent
 import com.example.aura.data.local.preferences.AuraPreferences
+import com.example.aura.domain.model.AccessibilityFilter
+import com.example.aura.domain.model.AccessibilityProfile
+import com.example.aura.domain.model.Establishment
+import com.example.aura.domain.model.Review
 import com.example.aura.domain.model.User
+import com.example.aura.domain.usecase.establishment.EstablishmentUseCases
+import com.example.aura.domain.usecase.review.ReviewUseCases
 import com.example.aura.domain.usecase.user.UserUseCases
+import com.example.aura.presentation.ui.components.AccessibilitySettings
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val userUseCases: UserUseCases,
-    application: Application
+    private val establishmentUseCases: EstablishmentUseCases,
+    private val reviewUseCases: ReviewUseCases,
+    private val preferences: AuraPreferences,
 ) : BaseViewModel() {
-    // expose a reactive StateFlow<User?> backed by the local DB flow (preserves watcher)
-    val user = userUseCases.getLocalUser()
+
+    val user: StateFlow<User?> = userUseCases.getLocalUser()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    // derive uiState from the user flow to keep a single source of truth
-    val uiUserState: StateFlow<ResultWrapper<User?>> = user
-        .map<User?, ResultWrapper<User?>> { user -> ResultWrapper.Success(user) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ResultWrapper.Loading)
+    val settings: StateFlow<AccessibilitySettings> = combine(
+        preferences.isDarkMode,
+        preferences.isLargeText,
+        preferences.isReduceMotion,
+    ) { dark, large, motion -> AccessibilitySettings(dark, large, motion) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AccessibilitySettings())
 
-    private val prefs = AuraPreferences(application)
+    private val _favorites = MutableStateFlow<List<Establishment>>(emptyList())
+    val favorites: StateFlow<List<Establishment>> = _favorites.asStateFlow()
 
-    private val _isDarkMode = MutableStateFlow(false)
-    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+    private val _myReviews = MutableStateFlow<List<Review>>(emptyList())
+    val myReviews: StateFlow<List<Review>> = _myReviews.asStateFlow()
 
-    private val _isCloudBackupEnabled = MutableStateFlow(false)
-    val isCloudBackupEnabled: StateFlow<Boolean> = _isCloudBackupEnabled.asStateFlow()
+    private val _loggedOut = MutableStateFlow<UiEvent<Unit>?>(null)
+    val loggedOut: StateFlow<UiEvent<Unit>?> = _loggedOut.asStateFlow()
 
     init {
-        // observe preferences
-        prefs.isDarkMode.onEach { _isDarkMode.value = it }.launchIn(viewModelScope)
-        prefs.isCloudBackupEnabled.onEach { _isCloudBackupEnabled.value = it }.launchIn(viewModelScope)
-    }
-
-    // actions
-    fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch {
-            prefs.setDarkMode(enabled)
+            user.collect { refreshLists(it) }
         }
     }
 
-    fun setCloudBackup(enabled: Boolean) {
+    fun refresh() {
+        viewModelScope.launch { refreshLists(user.value) }
+    }
+
+    private suspend fun refreshLists(user: User?) {
+        _favorites.value = runCatching { establishmentUseCases.getFavorites() }.getOrDefault(emptyList())
+        _myReviews.value = user?.let {
+            runCatching { reviewUseCases.getUserReviews(it.id) }.getOrDefault(emptyList())
+        }.orEmpty()
+    }
+
+    fun selectProfile(profile: AccessibilityProfile) {
+        val current = user.value ?: return
+        val newProfile = if (current.profile == profile) null else profile
         viewModelScope.launch {
-            prefs.setCloudBackup(enabled)
+            // Ao trocar de perfil, os filtros passam a seguir as sugestões do novo perfil
+            userUseCases.updateAccessibilityProfile(newProfile, emptySet())
         }
     }
 
-    fun logout(onSuccess: () -> Unit){
-        viewModelScope.launch {
-            userUseCases.logoutUser()
-            onSuccess()
-        }
+    fun toggleFilter(filter: AccessibilityFilter) {
+        val current = user.value ?: return
+        val base = current.accessibilityFilters
+        val updated = if (filter in base) base - filter else base + filter
+        viewModelScope.launch { userUseCases.updateAccessibilityProfile(current.profile, updated) }
+    }
+
+    fun updateName(name: String) {
+        viewModelScope.launch { runCatching { userUseCases.updateUserName(name) } }
+    }
+
+    fun setHighContrast(value: Boolean) = viewModelScope.launch { preferences.setDarkMode(value) }
+    fun setLargeText(value: Boolean) = viewModelScope.launch { preferences.setLargeText(value) }
+    fun setReduceMotion(value: Boolean) = viewModelScope.launch { preferences.setReduceMotion(value) }
+
+    fun logout() {
+        executeSafeCall(
+            block = { userUseCases.logoutUser() },
+            onSuccess = { _loggedOut.value = UiEvent(Unit) },
+        )
     }
 }
 
 class ProfileViewModelFactory(
     private val userUseCases: UserUseCases,
-    private val app: Application
+    private val establishmentUseCases: EstablishmentUseCases,
+    private val reviewUseCases: ReviewUseCases,
+    private val preferences: AuraPreferences,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ProfileViewModel(userUseCases, app) as T
+            return ProfileViewModel(userUseCases, establishmentUseCases, reviewUseCases, preferences) as T
         }
         throw IllegalArgumentException("Unknown VM class")
     }

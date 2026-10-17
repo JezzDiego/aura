@@ -14,9 +14,17 @@ interface UserDao {
     suspend fun insertUser(user: UserEntity)
 
     @Query("SELECT * FROM user LIMIT 1")
-    fun getUser(): Flow<UserEntity?>
+    fun observeUser(): Flow<UserEntity?>
+
+    @Query("SELECT * FROM user LIMIT 1")
+    suspend fun getUser(): UserEntity?
+
+    @Query("UPDATE user SET profile = :profile, preferredFilters = :filters")
+    suspend fun updateProfile(profile: String?, filters: List<String>)
+
+    @Query("UPDATE user SET name = :name")
+    suspend fun updateName(name: String)
 
     @Query("DELETE FROM user")
     suspend fun clearUser()
-
 }

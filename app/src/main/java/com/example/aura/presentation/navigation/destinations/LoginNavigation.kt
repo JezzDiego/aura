@@ -9,7 +9,6 @@ import com.example.aura.presentation.ui.feature_login.LoginScreen
 
 const val loginRoute = "loginRoute"
 
-
 fun NavGraphBuilder.loginScreen(container: AppContainer, navController: NavHostController) {
     composable(loginRoute) {
         LoginScreen(container, navController)

@@ -1,365 +1,324 @@
 package com.example.aura.presentation.ui.feature_profile
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.Animation
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Contrast
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.RateReview
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.WifiOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberAsyncImagePainter
-import com.example.aura.di.AppContainer
-import com.example.aura.core.ResultWrapper
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.Switch
 import androidx.navigation.NavHostController
+import com.example.aura.core.OnResumeEffect
+import com.example.aura.di.AppContainer
+import com.example.aura.domain.model.AccessibilityFilter
+import com.example.aura.domain.model.AccessibilityGroup
+import com.example.aura.presentation.navigation.destinations.navigateToEstablishmentDetails
 import com.example.aura.presentation.navigation.destinations.navigateToLoginScreenWithPopUp
-import kotlin.Unit
+import com.example.aura.presentation.ui.components.CheckboxRow
+import com.example.aura.presentation.ui.components.EstablishmentRow
+import com.example.aura.presentation.ui.components.InitialsAvatar
+import com.example.aura.presentation.ui.components.Pill
+import com.example.aura.presentation.ui.components.SectionCard
+import com.example.aura.presentation.ui.components.TonalButton
+import com.example.aura.presentation.ui.components.icon
+import com.example.aura.presentation.ui.feature_login.ProfileChips
+import com.example.aura.utils.formatRelativeTime
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ProfileScreen(
-    container: AppContainer,
-    navController: NavHostController
-) {
-    val factory = ProfileViewModelFactory(container.userUseCases, app = container.application)
+fun ProfileScreen(container: AppContainer, navController: NavHostController) {
+    val factory = ProfileViewModelFactory(
+        container.userUseCases,
+        container.establishmentUseCases,
+        container.reviewUseCases,
+        container.preferences,
+    )
     val viewModel: ProfileViewModel = viewModel(factory = factory)
-    val userState by viewModel.uiUserState.collectAsState()
+    val user by viewModel.user.collectAsState()
+    val settings by viewModel.settings.collectAsState()
+    val favorites by viewModel.favorites.collectAsState()
+    val myReviews by viewModel.myReviews.collectAsState()
+    val loggedOut by viewModel.loggedOut.collectAsState()
+    var editingName by rememberSaveable { mutableStateOf(false) }
 
-    val darkThemeEnabled = viewModel.isDarkMode.collectAsState()
-    val cloudBackupEnabled = viewModel.isCloudBackupEnabled.collectAsState()
+    OnResumeEffect { viewModel.refresh() }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    LaunchedEffect(loggedOut) {
+        loggedOut?.getContentIfNotHandled()?.let { navController.navigateToLoginScreenWithPopUp() }
+    }
+
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            val scrollState = rememberScrollState()
-
-            when (userState) {
-                is ResultWrapper.Loading -> {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        LoadingIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 24.dp)
+        item("identity") {
+            SectionCard {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    InitialsAvatar(user?.initials ?: "?", size = 64.dp)
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            user?.name ?: "",
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.semantics { heading() },
                         )
+                        val email = user?.email.orEmpty()
+                        Text(
+                            email.ifBlank { "Perfil local (sem e-mail)" },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    IconButton(onClick = { editingName = true }) {
+                        Icon(Icons.Outlined.Edit, contentDescription = "Editar nome")
                     }
                 }
-
-                is ResultWrapper.Error -> {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text(text = "Erro ao carregar usuário", color = MaterialTheme.colorScheme.error)
-                    }
-                }
-
-                is ResultWrapper.Success -> {
-                    val user = (userState as ResultWrapper.Success).value
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(scrollState)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.Start
-                    ) {
-
-                        // Profile Card
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            shape = MaterialTheme.shapes.medium,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // avatar placeholder
-                                Box(
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .clip(CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    // circular border
-                                    Image(
-                                        painter = rememberAsyncImagePainter(model = user?.profileImageUrl),
-                                        contentDescription = "Foto de perfil",
-                                        modifier = Modifier
-                                            .size(72.dp)
-                                            .clip(CircleShape)
-                                            .border(
-                                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                                                CircleShape
-                                            ),
-                                        contentScale = ContentScale.Crop)
-                                }
-
-                                Spacer(modifier = Modifier.height(12.dp))
-
-                                Text(
-                                    text = user?.name ?: "",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(18.dp))
-
-                        // Section Header
-                        Text(
-                            text = "Informações Pessoais",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Fields
-                        ReadOnlyField(label = "Nome Completo", value = user?.name ?: "")
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ReadOnlyField(label = "Data de Nascimento", value = user?.birthDate ?: "")
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ReadOnlyField(label = "Gênero", value = user?.gender ?: "" )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        ReadOnlyField(label = "Convênio Médico", value = user?.healthInsurance ?: "")
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        Text(
-                            text = "Configurações",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-
-                        Spacer(modifier = Modifier.size(12.dp))
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inverseOnSurface),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
-                            Column(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)) {
-
-                                SettingRow(
-                                    icon = { Icon(Icons.Default.CloudUpload, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                    title = "Backup Automático",
-                                    trailing = {
-                                        Switch(
-                                            checked = cloudBackupEnabled.value,
-                                            onCheckedChange = { viewModel.setCloudBackup(it) },
-                                        )
-                                    }
-                                )
-
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    thickness = DividerDefaults.Thickness,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                                )
-
-                                SettingRow(
-                                    icon = { Icon(Icons.Default.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                    title = "Notificações",
-                                    trailing = {
-                                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface)
-                                    }
-                                )
-
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    thickness = DividerDefaults.Thickness,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                                )
-
-                                SettingRow(
-                                    icon = { Icon(Icons.Default.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                    title = "Tema Escuro",
-                                    trailing = {
-                                        Switch(
-                                            checked = darkThemeEnabled.value,
-                                            onCheckedChange = { viewModel.setDarkMode(it) },
-                                        )
-                                    }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.size(12.dp))
-
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.inverseOnSurface),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
-                            Column(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)) {
-
-                                SettingRow(
-                                    icon = { Icon(Icons.Default.Fingerprint, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                    title = "Segurança e Biometria",
-                                    trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) }
-                                )
-
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    thickness = DividerDefaults.Thickness,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                                )
-
-                                SettingRow(
-                                    icon = { Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                                    title = "Termos e Privacidade",
-                                    trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.size(18.dp))
-
-                        Button(
-                            onClick = {
-                                viewModel.logout{
-                                    navController.navigateToLoginScreenWithPopUp()
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
-                                contentColor = MaterialTheme.colorScheme.error
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(text = "Sair da Conta", style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Pill(
+                        if (myReviews.size == 1) "1 relato publicado" else "${myReviews.size} relatos publicados",
+                        icon = Icons.Outlined.RateReview,
+                    )
+                    Pill(
+                        if (favorites.size == 1) "1 favorito" else "${favorites.size} favoritos",
+                        icon = Icons.Outlined.BookmarkBorder,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun ReadOnlyField(label: String, value: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.small,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingRow(
-    icon: @Composable () -> Unit,
-    title: String,
-    trailing: @Composable (() -> Unit)? = null
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .background(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+        item("profile") {
+            SectionCard {
+                Text(
+                    "Meu perfil de acessibilidade",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
                 )
-
-                Box(modifier = Modifier.size(35.dp), contentAlignment = Alignment.Center) {
-                    icon()
-                }
+                Text(
+                    "Usado no botão \"Filtrar pelo meu perfil\" e para contextualizar seus relatos.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ProfileChips(selected = user?.profile, onSelect = viewModel::selectProfile)
             }
-
-            Spacer(modifier = Modifier.size(12.dp))
-
-            Text(text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
         }
 
-        if (trailing != null) {
-            Box(contentAlignment = Alignment.Center) {
-                trailing()
+        item("filters") {
+            SectionCard {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Outlined.Tune, null, tint = MaterialTheme.colorScheme.primary)
+                    Text(
+                        "Filtros prioritários",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                }
+                Text(
+                    "Defina uma vez as adaptações prioritárias e receba recomendações imediatas.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                val active = user?.accessibilityFilters.orEmpty()
+                AccessibilityGroup.entries.forEach { group ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(top = 8.dp),
+                    ) {
+                        Icon(group.icon, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
+                        Text(group.displayName, style = MaterialTheme.typography.titleSmall)
+                    }
+                    AccessibilityFilter.entries.filter { it.group == group }.forEach { filter ->
+                        CheckboxRow(
+                            label = filter.displayName,
+                            checked = filter in active,
+                            onCheckedChange = { viewModel.toggleFilter(filter) },
+                            icon = filter.icon,
+                        )
+                    }
+                }
+            }
+        }
+
+        item("settings") {
+            SectionCard {
+                Text(
+                    "Preferências de exibição",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
+                )
+                SwitchRow(Icons.Outlined.Contrast, "Alto contraste (tema escuro)", settings.highContrast) { viewModel.setHighContrast(it) }
+                SwitchRow(Icons.Outlined.FormatSize, "Texto ampliado", settings.largeText) { viewModel.setLargeText(it) }
+                SwitchRow(Icons.Outlined.Animation, "Reduzir animações", settings.reduceMotion) { viewModel.setReduceMotion(it) }
+            }
+        }
+
+        item("favorites") {
+            SectionCard {
+                Text(
+                    "Locais salvos",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
+                )
+                if (favorites.isEmpty()) {
+                    Text(
+                        "Toque no marcador nos detalhes de um local para salvá-lo aqui.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                favorites.forEach { establishment ->
+                    EstablishmentRow(
+                        establishment = establishment,
+                        onClick = { navController.navigateToEstablishmentDetails(establishment.id) },
+                    )
+                }
+            }
+        }
+
+        if (myReviews.isNotEmpty()) {
+            item("my-reviews-header") {
+                Text(
+                    "Meus relatos",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.semantics { heading() },
+                )
+            }
+            items(myReviews, key = { it.id }) { review ->
+                SectionCard(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            review.establishmentName,
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            formatRelativeTime(review.createdAt),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                    Text("\"${review.comment}\"", style = MaterialTheme.typography.bodyMedium, maxLines = 3)
+                    Text(
+                        "Útil para ${review.helpfulCount} pessoas · ${review.photos.size} foto(s)",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+
+        item("logout") {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TonalButton(
+                    text = "Sair e apagar perfil local",
+                    leadingIcon = Icons.AutoMirrored.Outlined.Logout,
+                    onClick = viewModel::logout,
+                    contentColor = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Outlined.WifiOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                    Text(
+                        "Modo offline: dados salvos apenas neste aparelho.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
+
+    if (editingName) {
+        EditNameDialog(
+            initial = user?.name.orEmpty(),
+            onConfirm = {
+                viewModel.updateName(it)
+                editingName = false
+            },
+            onDismiss = { editingName = false },
+        )
+    }
+}
+
+@Composable
+private fun SwitchRow(icon: ImageVector, title: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
+        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = null)
+    }
+}
+
+@Composable
+private fun EditNameDialog(initial: String, onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar nome") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                singleLine = true,
+                label = { Text("Nome") },
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(name) }, enabled = name.isNotBlank()) { Text("Salvar") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
 }

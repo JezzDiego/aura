@@ -2,50 +2,40 @@ package com.example.aura.data.mapper
 
 import com.example.aura.data.local.entity.UserEntity
 import com.example.aura.data.remote.dto.UserDTO
-import com.example.aura.domain.model.SubscriptionPlan
+import com.example.aura.domain.model.AccessibilityFilter
+import com.example.aura.domain.model.AccessibilityProfile
 import com.example.aura.domain.model.User
 
-fun UserDTO.toDomain(): User {
-    return User(
-        id = id,
-        name = name,
-        email = email,
-        password = password,
-        birthDate = birthDate,
-        gender = gender,
-        healthInsurance = healthInsurance,
-        profileImageUrl = profileImageUrl,
-        subscriptionPlan = plan.let { subscriptionPlan ->
-            when (subscriptionPlan) {
-                SubscriptionPlan.FREE -> SubscriptionPlan.FREE
-                SubscriptionPlan.PREMIUM -> SubscriptionPlan.PREMIUM
-            }
-        },
-    )
-}
+fun UserEntity.toDomain(): User = User(
+    id = id,
+    name = name,
+    email = email,
+    profile = profile.toEnumOrNull<AccessibilityProfile>(),
+    preferredFilters = preferredFilters.mapNotNull { it.toEnumOrNull<AccessibilityFilter>() }.toSet(),
+    createdAt = createdAt,
+)
 
-fun UserEntity.toEntity(): UserEntity{
-    return UserEntity(
-        id = id,
-        name = name,
-        email = email,
-        birthDate = birthDate,
-        gender = gender,
-        healthInsurance = healthInsurance,
-        profileImageUrl = profileImageUrl,
-    )
-}
+fun User.toEntity(): UserEntity = UserEntity(
+    id = id,
+    name = name,
+    email = email,
+    profile = profile?.name,
+    preferredFilters = preferredFilters.map { it.name },
+    createdAt = createdAt,
+)
 
-fun UserEntity.toDomain(): User {
-    return User(
-        id = this.id,
-        name = this.name,
-        email = this.email,
-        password = "",
-        birthDate = this.birthDate,
-        gender = this.gender,
-        healthInsurance = this.healthInsurance,
-        profileImageUrl = this.profileImageUrl,
-        subscriptionPlan = SubscriptionPlan.FREE
-    )
-}
+fun UserDTO.toDomain(): User = User(
+    id = id,
+    name = name,
+    email = email,
+    profile = profile.toEnumOrNull<AccessibilityProfile>(),
+    preferredFilters = preferredFilters.orEmpty().mapNotNull { it.toEnumOrNull<AccessibilityFilter>() }.toSet(),
+)
+
+fun User.toDto(): UserDTO = UserDTO(
+    id = id,
+    name = name,
+    email = email,
+    profile = profile?.name,
+    preferredFilters = preferredFilters.map { it.name },
+)

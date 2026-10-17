@@ -1,196 +1,215 @@
 package com.example.aura.presentation.ui.feature_login
 
-
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AccessibilityNew
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.WifiOff
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.aura.core.ResultWrapper
 import com.example.aura.di.AppContainer
+import com.example.aura.domain.model.AccessibilityProfile
+import com.example.aura.presentation.navigation.LocalAppActions
 import com.example.aura.presentation.navigation.destinations.navigateToMainPagerScreenWithPopUpToLoginScreen
+import com.example.aura.presentation.ui.components.AuraLogo
+import com.example.aura.presentation.ui.components.Pill
+import com.example.aura.presentation.ui.components.PrimaryButton
+import com.example.aura.presentation.ui.components.SectionCard
+import com.example.aura.presentation.ui.components.SquareIconButton
+import com.example.aura.presentation.ui.components.icon
 
-
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Boas-vindas: cria um perfil local (offline) com nome, e-mail opcional e perfil de acessibilidade.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun LoginScreen(
-    container: AppContainer,
-    navController: NavHostController
-){
+fun LoginScreen(container: AppContainer, navController: NavHostController) {
     val factory = LoginViewModelFactory(container.userUseCases)
     val viewModel: LoginViewModel = viewModel(factory = factory)
-
+    val form by viewModel.form.collectAsState()
     val loginState by viewModel.uiState.collectAsState()
+    val actions = LocalAppActions.current
 
     LaunchedEffect(loginState) {
-        if (loginState is ResultWrapper.Success){
+        if (loginState is ResultWrapper.Success) {
             navController.navigateToMainPagerScreenWithPopUpToLoginScreen()
         }
     }
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    )
 
-
-    Surface(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .windowInsetsPadding(WindowInsets.safeDrawing)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .scrollable(
-                    orientation = Orientation.Vertical,
-                    state = rememberScrollState()
-                )
-            ,
-        ) {
-            Text(
-                text = "AURA",
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold
+        Row(Modifier.fillMaxWidth().height(64.dp), verticalAlignment = Alignment.CenterVertically) {
+            AuraLogo(height = 40.dp)
+            Spacer(Modifier.weight(1f))
+            SquareIconButton(
+                icon = Icons.Filled.AccessibilityNew,
+                contentDescription = "Ajustes de acessibilidade e contraste",
+                onClick = actions.openAccessibilitySettings,
+                iconSize = 24.dp,
             )
-            Text(
-                modifier = Modifier
-                    .padding(start = 12.dp, end = 12.dp, top = 2.dp),
-                text = "Acompanhamento Unificado de Resultados e Análises",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(45.dp))
-
-            Box(
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.secondaryContainer, RoundedCornerShape(16.dp))
-                    .padding(horizontal = 40.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = "Digite suas credenciais para Entrar",
-                    fontSize = 15.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            EmailInput(
-                email = email,
-                onEmailChange = { email = it }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            PasswordInput(
-                password = password,
-                onPasswordChange = { password = it }
-            )
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            Button(
-                onClick = {viewModel.login(email, password)},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(999.dp),
-                enabled = !(email.isBlank() || password.isBlank())
-            ) {
-                Text("Entrar", fontSize = 18.sp)
-            }
-
-            when(loginState){
-                is ResultWrapper.Loading -> Text("")
-                is ResultWrapper.Success -> Text("Bem-vindo")
-                is ResultWrapper.Error -> Text("Erro")
-            }
-
         }
 
+        SectionCard {
+            Pill("Bem-vindo(a)", uppercase = true)
+            Text(
+                "Explore a cidade com autonomia",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                "Crie seu perfil para receber recomendações de locais com acessibilidade verificada pela comunidade.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedTextField(
+                value = form.name,
+                onValueChange = viewModel::onNameChange,
+                label = { Text("Como podemos te chamar?") },
+                leadingIcon = { Icon(Icons.Outlined.Person, null) },
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp),
+                colors = textFieldColors,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = form.email,
+                onValueChange = viewModel::onEmailChange,
+                label = { Text("E-mail (opcional)") },
+                leadingIcon = { Icon(Icons.Outlined.Email, null) },
+                singleLine = true,
+                shape = RoundedCornerShape(8.dp),
+                colors = textFieldColors,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        SectionCard {
+            Text(
+                "Qual o seu perfil ou recurso principal?",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                "Opcional. Usamos para sugerir filtros prioritários — você pode mudar depois no Perfil.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            ProfileChips(selected = form.profile, onSelect = viewModel::onProfileChange)
+        }
+
+        (loginState as? ResultWrapper.Error)?.let {
+            Text(
+                it.throwable.message ?: "Não foi possível continuar.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        PrimaryButton(
+            text = "Começar a explorar",
+            trailingIcon = Icons.AutoMirrored.Filled.ArrowForward,
+            onClick = viewModel::login,
+            loading = loginState is ResultWrapper.Loading,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        )
+        TextButton(onClick = viewModel::continueAsGuest, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text("Continuar sem cadastro", style = MaterialTheme.typography.labelLarge)
+        }
+
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Outlined.WifiOff, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+            Text(
+                "Seus dados ficam salvos apenas neste aparelho.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun EmailInput(email: String, onEmailChange: (String) -> Unit){
-
-    OutlinedTextField(
-        value = email,
-        onValueChange = onEmailChange,
-        label = {Text("E-mail")},
-        leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(999.dp)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PasswordInput(password: String, onPasswordChange: (String) -> Unit){
-    var passwordVisible by remember { mutableStateOf(false) }
-
-    OutlinedTextField(
-        value = password,
-        onValueChange = onPasswordChange,
-        label = {Text("Senha")},
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-        visualTransformation = if(passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = {
-            val image = if (passwordVisible)
-                Icons.Filled.Visibility
-            else
-                Icons.Filled.VisibilityOff
-
-            IconButton(onClick = {passwordVisible = !passwordVisible}) {
-                Icon(imageVector = image, contentDescription = null)
-            }
-        },
-        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        shape = RoundedCornerShape(999.dp)
-    )
+fun ProfileChips(selected: AccessibilityProfile?, onSelect: (AccessibilityProfile) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        AccessibilityProfile.entries.forEach { profile ->
+            FilterChip(
+                selected = profile == selected,
+                onClick = { onSelect(profile) },
+                label = { Text(profile.displayName, style = MaterialTheme.typography.labelLarge) },
+                leadingIcon = { Icon(profile.icon, null, modifier = Modifier.size(18.dp)) },
+                shape = RoundedCornerShape(8.dp),
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                    selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                    iconColor = MaterialTheme.colorScheme.primary,
+                ),
+                border = null,
+                modifier = Modifier.height(48.dp),
+            )
+        }
+    }
 }
